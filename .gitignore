@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+coverage
+playwright-report
+test-results
+.env
+.env.local
+.env.*.local
+!.env.example
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+# Unrelated nested repository; the application repository is this directory.
+/CS-Revision-App/
