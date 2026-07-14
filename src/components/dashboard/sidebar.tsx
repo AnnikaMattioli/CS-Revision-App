@@ -11,10 +11,10 @@ import { createClient } from "@/lib/supabase/client";
 
 const nav = [
   { label: "Dashboard", href: "/dashboard", icon: Home, available: true },
-  { label: "Learn", href: "/learn", icon: BookOpen, available: false },
+  { label: "Learn", href: "/learn", icon: BookOpen, available: true },
   { label: "Practise", href: "/practise", icon: Brain, available: false },
-  { label: "Flashcards", href: "/flashcards", icon: NotebookTabs, available: false },
-  { label: "Worked solutions", href: "/worked-solutions", icon: FlaskConical, available: false },
+  { label: "Flashcards", href: "/flashcards", icon: NotebookTabs, available: true },
+  { label: "Worked solutions", href: "/worked-solutions", icon: FlaskConical, available: true },
   { label: "Exam practice", href: "/exam-practice", icon: ClipboardCheck, available: false },
   { label: "Progress", href: "/progress", icon: ChartNoAxesCombined, available: false },
   { label: "Achievements", href: "/achievements", icon: Award, available: false },
@@ -36,7 +36,7 @@ export function Sidebar() {
     <div className="flex h-20 items-center justify-between px-5"><Logo /><button className="grid size-10 place-items-center rounded-xl lg:hidden" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></button></div>
     <nav aria-label="Learning navigation" className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
       {nav.map(({ label, href, icon: Icon, available }) => available ? (
-        <Link key={label} href={href} onClick={() => setOpen(false)} className={cn("flex min-h-11 items-center gap-3 rounded-xl px-3 font-extrabold transition", pathname === href ? "bg-violet-100 text-[var(--violet)] dark:bg-violet-500/15" : "text-muted hover:bg-[var(--surface-soft)] hover:text-[var(--foreground)]")}><Icon size={19} aria-hidden="true" />{label}</Link>
+        <Link key={label} href={href} onClick={() => setOpen(false)} className={cn("flex min-h-11 items-center gap-3 rounded-xl px-3 font-extrabold transition", pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`)) ? "bg-violet-100 text-[var(--violet)] dark:bg-violet-500/15" : "text-muted hover:bg-[var(--surface-soft)] hover:text-[var(--foreground)]")}><Icon size={19} aria-hidden="true" />{label}</Link>
       ) : (
         <span key={label} className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-xl px-3 font-bold text-muted opacity-60" title="Coming in a later build phase"><Icon size={19} aria-hidden="true" /><span className="flex-1">{label}</span><span className="text-[10px] font-black uppercase tracking-wide">Soon</span></span>
       ))}

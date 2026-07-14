@@ -4,9 +4,9 @@
 
 Next.js setup, original design system, Supabase boundary, full schema migration, RLS, authentication, roles, onboarding, navigation, demo-aware dashboard, documentation and baseline tests.
 
-## Phase 2 — Course content
+## Phase 2 — Course content (completed)
 
-Course hierarchy, real topic and lesson pages, lesson progress, flashcards and worked solutions using representative original content.
+Course hierarchy, real topic and lesson pages, persisted lesson progress, active-recall flashcards and worked solutions using representative original content. The initial content is deliberately limited to three OCR GCSE sample topics.
 
 ## Phase 3 — Practice engine
 

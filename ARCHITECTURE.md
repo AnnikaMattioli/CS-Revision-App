@@ -25,7 +25,7 @@ src/
     (platform)/         signed-in application shell
     auth/callback/      secure PKCE callback
   components/
-    auth/ dashboard/ marketing/ onboarding/ providers/ ui/
+    auth/ content/ dashboard/ marketing/ onboarding/ providers/ ui/
   lib/
     supabase/ validation/ demo-data.ts env.ts utils.ts
   types/
@@ -34,7 +34,7 @@ supabase/
 e2e/
 ```
 
-The course model is deliberately data-driven. Adding a board or qualification is a database change, not a navigation rewrite. Protected answers live in separate tables with no client read grant. Future marking runs inside trusted server-side functions and returns only post-submission feedback.
+The course model is deliberately data-driven. `lib/content/repository.ts` reads the active enrolment and published hierarchy from Supabase, while the same interfaces serve labelled demo content when credentials are absent. Adding a board or qualification is a database change, not a navigation rewrite. Protected answers live in separate tables with no client read grant. Future marking runs inside trusted server-side functions and returns only post-submission feedback.
 
 ## Key decisions
 

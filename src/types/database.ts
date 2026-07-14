@@ -56,6 +56,45 @@ export type Database = {
         Update: { course_id?: string; is_active?: boolean };
         Relationships: [];
       };
+      specification_sections: {
+        Row: { id: string; course_id: string; code: string; title: string; description: string; sort_order: number; status: "draft" | "published" | "archived" };
+        Insert: never; Update: never; Relationships: [];
+      };
+      topics: {
+        Row: { id: string; specification_section_id: string; slug: string; title: string; description: string; icon: string | null; estimated_minutes: number; learning_objectives: string[]; sort_order: number; status: "draft" | "published" | "archived" };
+        Insert: never; Update: never; Relationships: [];
+      };
+      subtopics: {
+        Row: { id: string; topic_id: string; slug: string; title: string; description: string; sort_order: number; status: "draft" | "published" | "archived" };
+        Insert: never; Update: never; Relationships: [];
+      };
+      lessons: {
+        Row: { id: string; subtopic_id: string; slug: string; title: string; summary: string; estimated_minutes: number; sort_order: number; status: "draft" | "published" | "archived" };
+        Insert: never; Update: never; Relationships: [];
+      };
+      lesson_sections: {
+        Row: { id: string; lesson_id: string; heading: string; body: { paragraphs?: string[]; callout?: { type: "definition" | "tip" | "warning"; title: string; text: string } }; sort_order: number };
+        Insert: never; Update: never; Relationships: [];
+      };
+      flashcards: {
+        Row: { id: string; subtopic_id: string; front: string; back: string; hint: string | null; sort_order: number; status: "draft" | "published" | "archived" };
+        Insert: never; Update: never; Relationships: [];
+      };
+      flashcard_reviews: {
+        Row: { id: string; user_id: string; flashcard_id: string; rating: number; reviewed_at: string; next_review_at: string | null };
+        Insert: { user_id: string; flashcard_id: string; rating: number; next_review_at?: string | null };
+        Update: never; Relationships: [];
+      };
+      worked_solutions: {
+        Row: { id: string; subtopic_id: string; title: string; prompt: string; steps: Array<{ title: string; explanation: string; working?: string }>; final_answer: string; status: "draft" | "published" | "archived" };
+        Insert: never; Update: never; Relationships: [];
+      };
+      lesson_progress: {
+        Row: { user_id: string; lesson_id: string; completed: boolean; progress_percent: number; last_viewed_at: string; completed_at: string | null };
+        Insert: { user_id: string; lesson_id: string; completed?: boolean; progress_percent?: number; completed_at?: string | null };
+        Update: { completed?: boolean; progress_percent?: number; completed_at?: string | null };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

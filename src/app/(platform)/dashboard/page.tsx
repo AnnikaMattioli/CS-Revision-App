@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowRight, BookOpen, CircleHelp, Flame, Target, Trophy } from "lucide-react";
+import Link from "next/link";
 import { ActivityChart } from "@/components/dashboard/dashboard-chart";
 import { CourseProgress } from "@/components/dashboard/course-progress";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
 
     <section className="relative overflow-hidden rounded-[1.75rem] bg-[linear-gradient(120deg,#6847e8,#4977ed)] p-6 text-white shadow-xl shadow-violet-500/15 sm:p-8">
       <div className="absolute -right-10 -top-24 size-72 rounded-full border-[40px] border-white/10" />
-      <div className="relative max-w-2xl"><span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black tracking-wide">CONTINUE LEARNING</span><h2 className="mt-4 text-2xl font-black sm:text-3xl">Memory and storage</h2><p className="mt-2 text-violet-100">Next up: secondary storage technologies</p><div className="mt-5 flex items-center gap-3"><div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/20"><div className="h-full w-[54%] rounded-full bg-white" /></div><span className="text-sm font-black">54%</span></div><button disabled title="Lessons arrive in Phase 2" className="mt-6 inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-xl bg-white px-5 font-black text-violet-700 opacity-80">Continue in Phase 2 <ArrowRight size={18} /></button></div>
+      <div className="relative max-w-2xl"><span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black tracking-wide">CONTINUE LEARNING</span><h2 className="mt-4 text-2xl font-black sm:text-3xl">Memory and storage</h2><p className="mt-2 text-violet-100">Next up: secondary storage technologies</p><div className="mt-5 flex items-center gap-3"><div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/20"><div className="h-full w-[54%] rounded-full bg-white" /></div><span className="text-sm font-black">54%</span></div><Link href="/learn/memory-and-storage/secondary-storage" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 font-black text-violet-700 transition hover:-translate-y-0.5">Continue learning <ArrowRight size={18} /></Link></div>
     </section>
 
     <section aria-label="Learning statistics" className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

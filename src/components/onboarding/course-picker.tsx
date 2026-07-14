@@ -27,6 +27,8 @@ export function CoursePicker() {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Sign in again to save your course.");
+        const { error: deactivateError } = await supabase.from("user_course_enrolments").update({ is_active: false }).eq("user_id", user.id).eq("is_active", true);
+        if (deactivateError) throw deactivateError;
         const { error: enrolError } = await supabase.from("user_course_enrolments").upsert({ user_id: user.id, course_id: selected, is_active: true }, { onConflict: "user_id,course_id" });
         if (enrolError) throw enrolError;
         const { error: profileError } = await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", user.id);
