@@ -16,7 +16,7 @@ Question renderers, set creation, autosave, protected submission, objective/rubr
 
 Mastery calculation, progress charts, adaptive selection, weak-area recommendations, achievements and streaks.
 
-## Phase 5 — Exam mode
+## Phase 5 — Exam mode (completed)
 
 Timed assessments, question palette, warnings, auto-submission, results and time analysis.
 

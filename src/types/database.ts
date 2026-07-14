@@ -106,8 +106,8 @@ export type Database = {
         Insert: never; Update: never; Relationships: [];
       };
       practice_sets: {
-        Row: { id: string; owner_id: string | null; course_id: string; title: string; mode: string; time_limit_seconds: number | null; created_at: string };
-        Insert: { owner_id: string; course_id: string; title: string; mode?: string; time_limit_seconds?: number | null };
+        Row: { id: string; owner_id: string | null; course_id: string; title: string; mode: string; time_limit_seconds: number | null; exam_kind: string | null; allow_backwards: boolean; warn_unanswered: boolean; results_release: string; results_released_at: string | null; grade_boundaries: unknown | null; configuration: unknown; created_at: string };
+        Insert: { owner_id: string; course_id: string; title: string; mode?: string; time_limit_seconds?: number | null; exam_kind?: string | null; allow_backwards?: boolean; warn_unanswered?: boolean; results_release?: string; results_released_at?: string | null; grade_boundaries?: unknown | null; configuration?: unknown };
         Update: never; Relationships: [];
       };
       practice_set_questions: {
@@ -116,9 +116,9 @@ export type Database = {
         Update: never; Relationships: [];
       };
       attempts: {
-        Row: { id: string; user_id: string; practice_set_id: string; status: "in_progress" | "submitted" | "marked" | "abandoned"; started_at: string; submitted_at: string | null; marked_at: string | null; score: number | null; available_marks: number | null; duration_seconds: number | null; updated_at: string };
-        Insert: { user_id: string; practice_set_id: string; status?: "in_progress" };
-        Update: { status?: "submitted" | "marked"; submitted_at?: string; marked_at?: string; score?: number; available_marks?: number; duration_seconds?: number };
+        Row: { id: string; user_id: string; practice_set_id: string; status: "in_progress" | "submitted" | "marked" | "abandoned"; started_at: string; deadline_at: string | null; auto_submitted: boolean; submitted_at: string | null; marked_at: string | null; score: number | null; available_marks: number | null; duration_seconds: number | null; updated_at: string };
+        Insert: { user_id: string; practice_set_id: string; status?: "in_progress"; deadline_at?: string | null };
+        Update: { status?: "submitted" | "marked"; auto_submitted?: boolean; submitted_at?: string; marked_at?: string; score?: number; available_marks?: number; duration_seconds?: number };
         Relationships: [];
       };
       attempt_answers: {
@@ -143,6 +143,11 @@ export type Database = {
         Insert: { user_id: string; activity_date: string; questions_answered?: number; lessons_completed?: number; flashcards_reviewed?: number; active_minutes?: number };
         Update: { questions_answered?: number; lessons_completed?: number; flashcards_reviewed?: number; active_minutes?: number; updated_at?: string };
         Relationships: [];
+      };
+      exam_question_timings: {
+        Row: { attempt_id: string; question_id: string; seconds_spent: number; created_at: string };
+        Insert: { attempt_id: string; question_id: string; seconds_spent: number };
+        Update: never; Relationships: [];
       };
       achievements: {
         Row: { id: string; code: string; title: string; description: string; icon: string; criteria: unknown; published: boolean; created_at: string };

@@ -41,6 +41,8 @@ Practice prompts are safe public data. Answer rules, rubrics and explanations ar
 
 After trusted marking, the same server route updates bounded topic mastery, daily activity and achievement awards. Progress pages read only the signed-in student’s RLS-protected records. Adaptive set creation ranks safe question metadata using configurable, documented weights; it never reads protected answers. See [ADAPTIVE_ALGORITHM.md](ADAPTIVE_ALGORITHM.md).
 
+Exam Mode stores authoritative paper rules and deadlines alongside the practice-set model, adds per-question timing, and wraps trusted marking with release-policy enforcement. Delayed feedback is censored by the route and independently protected by RLS. See [EXAM_MODE.md](EXAM_MODE.md).
+
 ## Key decisions
 
 - Supabase publishable credentials may be browser-visible; secret/service-role credentials must remain server-only.

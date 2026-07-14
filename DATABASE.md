@@ -25,6 +25,8 @@ The `handle_new_user` trigger creates a profile and student role after Supabase 
 
 Phase 3 creates owned practice sets and attempts through Row Level Security. Draft answers are autosaved with the signed-in student client. Submission rechecks the user, open-attempt status and exact set membership, then a server-only Supabase secret stores marking results and closes the attempt. Correct answers and rules never enter the pre-submission payload.
 
+Exam papers extend practice sets with navigation, release and grade-boundary configuration. Attempts carry authoritative deadlines and automatic-submission state, while `exam_question_timings` stores bounded timing aggregates. Delayed exam marking remains unreadable under RLS until an explicit release time.
+
 ## Important future work
 
 Before production deployment, final answer writes and attempt closure should move into one transactional, security-definer database function with a fixed `search_path`, and practice endpoints need deployment-edge rate limits. Teacher progress policies should expose only class members and the minimum required profile fields. Account deletion should use a verified server action that deletes the Auth user, allowing cascading personal-data deletion.

@@ -19,5 +19,5 @@ test("achievements show unlocked and in-progress milestones", async ({ page }) =
   await expect(page.getByRole("heading", { name: "Seven-day spark" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Topic master" })).toBeVisible();
   await expect(page.getByLabel("Unlocked", { exact: true })).toHaveCount(4);
-  await expect(page.getByLabel("Locked", { exact: true })).toHaveCount(2);
+  await expect(page.getByLabel("Locked", { exact: true })).toHaveCount(3);
 });

@@ -30,6 +30,7 @@ export const demoProgress: ProgressSnapshot = {
     { code: "topic-secure", title: "Secure foundations", description: "Reach Secure mastery in one topic", icon: "🛡️", earnedAt: "2026-07-13", progress: 1, target: 1 },
     { code: "mastery", title: "Topic master", description: "Reach Mastered in one topic", icon: "🏆", progress: 0, target: 1 },
     { code: "ten-sets", title: "Consistent practice", description: "Complete 10 practice sets", icon: "🎯", progress: 6, target: 10 },
+    { code: "first-exam", title: "Under exam conditions", description: "Complete your first timed test", icon: "⏱️", progress: 0, target: 1 },
   ],
 };
 

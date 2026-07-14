@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     return { topicSlug, topicTitle: items[0].question.topicTitle, previousScore, score: calculation.score, label: calculation.label, change: calculation.score - previousScore };
   });
   const response: PracticeResult = { attemptId: parsed.data.attemptId, submittedAt: new Date().toISOString(), durationSeconds: parsed.data.durationSeconds, score, availableMarks, percentage: availableMarks ? Math.round((score / availableMarks) * 100) : 0, results, masteryUpdates };
-  if (!parsed.data.attemptId.startsWith("demo-") && !parsed.data.attemptId.startsWith("retry-")) {
+  if (!parsed.data.attemptId.startsWith("demo-") && !parsed.data.attemptId.startsWith("exam-demo-") && !parsed.data.attemptId.startsWith("retry-")) {
     try {
       const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
       const { data: attempt } = await supabase.from("attempts").select("id,practice_set_id").eq("id", parsed.data.attemptId).eq("user_id", user.id).eq("status", "in_progress").maybeSingle(); if (!attempt) return NextResponse.json({ error: "Attempt is no longer open." }, { status: 409 });
