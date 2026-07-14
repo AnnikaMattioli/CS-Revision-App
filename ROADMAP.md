@@ -1,6 +1,6 @@
 # Section-by-section roadmap
 
-## Phase 1 — Foundation (current)
+## Phase 1 — Foundation (completed)
 
 Next.js setup, original design system, Supabase boundary, full schema migration, RLS, authentication, roles, onboarding, navigation, demo-aware dashboard, documentation and baseline tests.
 
@@ -8,7 +8,7 @@ Next.js setup, original design system, Supabase boundary, full schema migration,
 
 Course hierarchy, real topic and lesson pages, persisted lesson progress, active-recall flashcards and worked solutions using representative original content. The initial content is deliberately limited to three OCR GCSE sample topics.
 
-## Phase 3 — Practice engine
+## Phase 3 — Practice engine (completed)
 
 Question renderers, set creation, autosave, protected submission, objective/rubric marking, results and attempt history.
 

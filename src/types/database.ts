@@ -1,3 +1,5 @@
+import type { AnswerRule, PracticeAnswer, PublicQuestion, QuestionResult } from "@/types/practice";
+
 export type UserRole = "student" | "teacher" | "admin";
 export type QualificationLevel = "GCSE" | "A_LEVEL";
 
@@ -94,6 +96,41 @@ export type Database = {
         Insert: { user_id: string; lesson_id: string; completed?: boolean; progress_percent?: number; completed_at?: string | null };
         Update: { completed?: boolean; progress_percent?: number; completed_at?: string | null };
         Relationships: [];
+      };
+      questions: {
+        Row: { id: string; subtopic_id: string; type: string; difficulty: string; prompt: PublicQuestion; marks: number; calculator_allowed: boolean; status: "draft" | "published" | "archived"; version: number; created_by: string | null; archived_at: string | null; created_at: string; updated_at: string };
+        Insert: never; Update: never; Relationships: [];
+      };
+      question_answer_rules: {
+        Row: { id: string; question_id: string; rule_type: string; rule: AnswerRule; feedback: string | null; created_at: string; updated_at: string };
+        Insert: never; Update: never; Relationships: [];
+      };
+      practice_sets: {
+        Row: { id: string; owner_id: string | null; course_id: string; title: string; mode: string; time_limit_seconds: number | null; created_at: string };
+        Insert: { owner_id: string; course_id: string; title: string; mode?: string; time_limit_seconds?: number | null };
+        Update: never; Relationships: [];
+      };
+      practice_set_questions: {
+        Row: { practice_set_id: string; question_id: string; sort_order: number };
+        Insert: { practice_set_id: string; question_id: string; sort_order: number };
+        Update: never; Relationships: [];
+      };
+      attempts: {
+        Row: { id: string; user_id: string; practice_set_id: string; status: "in_progress" | "submitted" | "marked" | "abandoned"; started_at: string; submitted_at: string | null; marked_at: string | null; score: number | null; available_marks: number | null; duration_seconds: number | null; updated_at: string };
+        Insert: { user_id: string; practice_set_id: string; status?: "in_progress" };
+        Update: { status?: "submitted" | "marked"; submitted_at?: string; marked_at?: string; score?: number; available_marks?: number; duration_seconds?: number };
+        Relationships: [];
+      };
+      attempt_answers: {
+        Row: { id: string; attempt_id: string; question_id: string; answer: PracticeAnswer; flagged: boolean; saved_at: string };
+        Insert: { attempt_id: string; question_id: string; answer: PracticeAnswer; flagged?: boolean };
+        Update: { answer?: PracticeAnswer; flagged?: boolean; saved_at?: string };
+        Relationships: [];
+      };
+      marking_results: {
+        Row: { id: string; attempt_answer_id: string; marks_awarded: number; feedback: QuestionResult; rubric_evidence: unknown[]; marked_by: string; created_at: string };
+        Insert: { attempt_answer_id: string; marks_awarded: number; feedback: QuestionResult; rubric_evidence?: unknown[]; marked_by?: string };
+        Update: never; Relationships: [];
       };
     };
     Views: Record<string, never>;

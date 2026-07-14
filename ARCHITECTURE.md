@@ -24,17 +24,20 @@ src/
     (auth)/             authentication screens
     (platform)/         signed-in application shell
     auth/callback/      secure PKCE callback
+    api/practice/       practice creation, autosave and trusted submission
   components/
-    auth/ content/ dashboard/ marketing/ onboarding/ providers/ ui/
+    auth/ content/ dashboard/ marketing/ onboarding/ practice/ providers/ ui/
   lib/
-    supabase/ validation/ demo-data.ts env.ts utils.ts
+    content/ practice/ supabase/ validation/ demo-data.ts env.ts utils.ts
   types/
 supabase/
   migrations/ seed.sql
 e2e/
 ```
 
-The course model is deliberately data-driven. `lib/content/repository.ts` reads the active enrolment and published hierarchy from Supabase, while the same interfaces serve labelled demo content when credentials are absent. Adding a board or qualification is a database change, not a navigation rewrite. Protected answers live in separate tables with no client read grant. Future marking runs inside trusted server-side functions and returns only post-submission feedback.
+The course model is deliberately data-driven. `lib/content/repository.ts` reads the active enrolment and published hierarchy from Supabase, while the same interfaces serve labelled demo content when credentials are absent. Adding a board or qualification is a database change, not a navigation rewrite.
+
+Practice prompts are safe public data. Answer rules, rubrics and explanations are separate protected data and are also represented by a server-only question bank for demo mode. The browser autosaves draft responses, while the submission route validates ownership and set membership, marks on the server, stores trusted results and only then returns formal feedback. See [MARKING_SYSTEM.md](MARKING_SYSTEM.md).
 
 ## Key decisions
 

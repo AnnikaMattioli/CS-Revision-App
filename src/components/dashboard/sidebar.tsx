@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 const nav = [
   { label: "Dashboard", href: "/dashboard", icon: Home, available: true },
   { label: "Learn", href: "/learn", icon: BookOpen, available: true },
-  { label: "Practise", href: "/practise", icon: Brain, available: false },
+  { label: "Practise", href: "/practise", icon: Brain, available: true },
   { label: "Flashcards", href: "/flashcards", icon: NotebookTabs, available: true },
   { label: "Worked solutions", href: "/worked-solutions", icon: FlaskConical, available: true },
   { label: "Exam practice", href: "/exam-practice", icon: ClipboardCheck, available: false },
