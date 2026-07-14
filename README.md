@@ -1,6 +1,6 @@
 # Bytewise
 
-Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. The repository now contains **Phase 1: Foundation**, **Phase 2: Course content** and **Phase 3: Practice engine**: the design system, Supabase authentication, onboarding, application shell, dashboard, normalised schema, RLS, course content, flashcards, worked solutions and secure practice with autosave, deterministic marking, feedback and attempt history.
+Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. The repository now contains **Phases 1–4**: foundation, course content, a secure practice engine, and explainable progress and adaptation. Students can learn, revise with flashcards, complete autosaved marked sets, understand topic mastery, follow adaptive recommendations, build streaks and unlock achievements.
 
 The app uses clearly labelled representative data when Supabase is not configured. Once connected, authentication, content, progress and practice attempts use the database. Exam, teacher and administrator features remain labelled “Soon” rather than presented as working controls.
 
@@ -58,6 +58,7 @@ npm run test:e2e
 - Dashboard aggregate statistics remain demonstration values until the mastery and progress calculations arrive in Phase 4.
 - Email delivery and password reset depend on Supabase project configuration.
 - The representative practice bank contains ten original questions across three topics; it is an engine demonstration, not full specification coverage.
+- Adaptive ranking is fully implemented, but its variety is naturally limited until the representative ten-question bank expands.
 - Written marking is deterministic and explainable, but production rubrics still require subject-expert review and moderation.
 - Teacher and administrator interfaces arrive in Phases 6 and 7.
 - Rate limiting for sensitive production endpoints should be added at the deployment edge in Phase 8.

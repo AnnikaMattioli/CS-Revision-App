@@ -12,7 +12,7 @@ Course hierarchy, real topic and lesson pages, persisted lesson progress, active
 
 Question renderers, set creation, autosave, protected submission, objective/rubric marking, results and attempt history.
 
-## Phase 4 — Progress and adaptation
+## Phase 4 — Progress and adaptation (completed)
 
 Mastery calculation, progress charts, adaptive selection, weak-area recommendations, achievements and streaks.
 

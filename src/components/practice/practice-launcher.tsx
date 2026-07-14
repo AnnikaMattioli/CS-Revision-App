@@ -4,9 +4,10 @@ import { ArrowRight, Clock3, LoaderCircle, Shuffle, Target } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function PracticeLauncher() {
+export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adaptive" }: { initialTopic?: string; initialMode?: string }) {
   const router = useRouter();
-  const [topic, setTopic] = useState("mixed");
+  const [topic, setTopic] = useState(initialTopic);
+  const [mode, setMode] = useState(initialMode);
   const [difficulty, setDifficulty] = useState("mixed");
   const [timer, setTimer] = useState("untimed");
   const [starting, setStarting] = useState(false);
@@ -20,12 +21,13 @@ export function PracticeLauncher() {
       const response = await fetch("/api/practice/start", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ topic, difficulty, timer }),
+        body: JSON.stringify({ topic, difficulty, timer, mode }),
       });
 
       if (!response.ok) throw new Error("Could not start practice set");
-      const { attemptId } = (await response.json()) as { attemptId: string };
-      router.push(`/practise/session/${attemptId}?topic=${topic}&difficulty=${difficulty}&timer=${timer}`);
+      const { attemptId, questionIds } = (await response.json()) as { attemptId: string; questionIds?: string[] };
+      const ids = questionIds?.length ? `&ids=${questionIds.join(",")}` : "";
+      router.push(`/practise/session/${attemptId}?topic=${topic}&difficulty=${difficulty}&timer=${timer}${ids}`);
     } catch {
       setError("The set could not be started. Please try again.");
       setStarting(false);
@@ -39,7 +41,7 @@ export function PracticeLauncher() {
       <section className="card p-6 sm:p-8">
         <h2 className="text-2xl font-black">Build your set</h2>
         <p className="mt-2 text-muted">Choose a focus. Every set contains 10 original exam-style questions.</p>
-        <div className="mt-7 grid gap-5 sm:grid-cols-2">
+        <div className="mt-7 grid gap-5 sm:grid-cols-3">
           <label className="text-sm font-extrabold">
             Topic
             <select value={topic} onChange={(event) => setTopic(event.target.value)} className={selectClass}>
@@ -47,6 +49,15 @@ export function PracticeLauncher() {
               <option value="systems-architecture">Systems architecture</option>
               <option value="memory-and-storage">Memory and storage</option>
               <option value="networks-and-protocols">Networks and protocols</option>
+            </select>
+          </label>
+          <label className="text-sm font-extrabold">
+            Set style
+            <select value={mode} onChange={(event) => setMode(event.target.value)} className={selectClass}>
+              <option value="adaptive">Adaptive mix</option>
+              <option value="weak">Weakest areas</option>
+              <option value="unseen">Unseen questions</option>
+              <option value="all">Balanced course mix</option>
             </select>
           </label>
           <label className="text-sm font-extrabold">

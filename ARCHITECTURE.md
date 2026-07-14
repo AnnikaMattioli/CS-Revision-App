@@ -39,6 +39,8 @@ The course model is deliberately data-driven. `lib/content/repository.ts` reads 
 
 Practice prompts are safe public data. Answer rules, rubrics and explanations are separate protected data and are also represented by a server-only question bank for demo mode. The browser autosaves draft responses, while the submission route validates ownership and set membership, marks on the server, stores trusted results and only then returns formal feedback. See [MARKING_SYSTEM.md](MARKING_SYSTEM.md).
 
+After trusted marking, the same server route updates bounded topic mastery, daily activity and achievement awards. Progress pages read only the signed-in student’s RLS-protected records. Adaptive set creation ranks safe question metadata using configurable, documented weights; it never reads protected answers. See [ADAPTIVE_ALGORITHM.md](ADAPTIVE_ALGORITHM.md).
+
 ## Key decisions
 
 - Supabase publishable credentials may be browser-visible; secret/service-role credentials must remain server-only.

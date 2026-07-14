@@ -132,6 +132,27 @@ export type Database = {
         Insert: { attempt_answer_id: string; marks_awarded: number; feedback: QuestionResult; rubric_evidence?: unknown[]; marked_by?: string };
         Update: never; Relationships: [];
       };
+      topic_mastery: {
+        Row: { user_id: string; topic_id: string; mastery_score: number; confidence: "new" | "beginning" | "developing" | "secure" | "mastered"; questions_seen: number; accuracy_score: number; trend: string; explanation: string; updated_at: string };
+        Insert: { user_id: string; topic_id: string; mastery_score: number; confidence: "new" | "beginning" | "developing" | "secure" | "mastered"; questions_seen: number; accuracy_score?: number; trend?: string; explanation?: string; updated_at?: string };
+        Update: { mastery_score?: number; confidence?: "new" | "beginning" | "developing" | "secure" | "mastered"; questions_seen?: number; accuracy_score?: number; trend?: string; explanation?: string; updated_at?: string };
+        Relationships: [];
+      };
+      study_activity_days: {
+        Row: { user_id: string; activity_date: string; questions_answered: number; lessons_completed: number; flashcards_reviewed: number; active_minutes: number; created_at: string; updated_at: string };
+        Insert: { user_id: string; activity_date: string; questions_answered?: number; lessons_completed?: number; flashcards_reviewed?: number; active_minutes?: number };
+        Update: { questions_answered?: number; lessons_completed?: number; flashcards_reviewed?: number; active_minutes?: number; updated_at?: string };
+        Relationships: [];
+      };
+      achievements: {
+        Row: { id: string; code: string; title: string; description: string; icon: string; criteria: unknown; published: boolean; created_at: string };
+        Insert: never; Update: never; Relationships: [];
+      };
+      user_achievements: {
+        Row: { user_id: string; achievement_id: string; earned_at: string };
+        Insert: { user_id: string; achievement_id: string; earned_at?: string };
+        Update: never; Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test("practice answers survive refresh and receive secure feedback", async ({ page }) => {
   await page.goto("/practise");
   await expect(page.getByRole("heading", { level: 1, name: "Turn knowledge into marks" })).toBeVisible();
+  await page.getByLabel("Set style").selectOption("all");
   await page.getByRole("button", { name: "Start 10-question set" }).click();
   await expect(page).toHaveURL(/\/practise\/session\/demo-/);
 
@@ -24,6 +25,7 @@ test("practice answers survive refresh and receive secure feedback", async ({ pa
 
 test("completed practice appears in attempt history", async ({ page }) => {
   await page.goto("/practise");
+  await page.getByLabel("Set style").selectOption("all");
   await page.getByRole("button", { name: "Start 10-question set" }).click();
   await page.getByRole("button", { name: "Go to question 10" }).click();
   await page.getByRole("button", { name: "Submit set" }).click();

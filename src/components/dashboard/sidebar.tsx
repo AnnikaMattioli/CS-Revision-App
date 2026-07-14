@@ -16,8 +16,8 @@ const nav = [
   { label: "Flashcards", href: "/flashcards", icon: NotebookTabs, available: true },
   { label: "Worked solutions", href: "/worked-solutions", icon: FlaskConical, available: true },
   { label: "Exam practice", href: "/exam-practice", icon: ClipboardCheck, available: false },
-  { label: "Progress", href: "/progress", icon: ChartNoAxesCombined, available: false },
-  { label: "Achievements", href: "/achievements", icon: Award, available: false },
+  { label: "Progress", href: "/progress", icon: ChartNoAxesCombined, available: true },
+  { label: "Achievements", href: "/achievements", icon: Award, available: true },
   { label: "Classes", href: "/classes", icon: Users, available: false },
 ];
 

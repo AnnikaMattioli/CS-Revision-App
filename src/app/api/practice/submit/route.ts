@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { questionBank } from "@/lib/practice/question-bank";
 import { markQuestion } from "@/lib/practice/marking";
+import { calculateMastery } from "@/lib/progress/mastery";
 import type { PracticeAnswer, PracticeResult } from "@/types/practice";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -17,7 +18,15 @@ export async function POST(request: Request) {
   if (selected.length !== parsed.data.questionIds.length) return NextResponse.json({ error: "Question set is invalid." }, { status: 400 });
   const results = selected.map((question) => markQuestion(question, (parsed.data.answers[question.id] ?? null) as PracticeAnswer));
   const score = results.reduce((total, result) => total + result.marksAwarded, 0); const availableMarks = results.reduce((total, result) => total + result.marksAvailable, 0);
-  const response: PracticeResult = { attemptId: parsed.data.attemptId, submittedAt: new Date().toISOString(), durationSeconds: parsed.data.durationSeconds, score, availableMarks, percentage: availableMarks ? Math.round((score / availableMarks) * 100) : 0, results };
+  const topicGroups = new Map<string, typeof results>();
+  results.forEach((result) => topicGroups.set(result.question.topicSlug, [...(topicGroups.get(result.question.topicSlug) ?? []), result]));
+  const demoScores: Record<string, number> = { "systems-architecture": 72, "memory-and-storage": 54, "networks-and-protocols": 34 };
+  const masteryUpdates = [...topicGroups.entries()].map(([topicSlug, items]) => {
+    const previousScore = demoScores[topicSlug] ?? 0;
+    const calculation = calculateMastery(previousScore, previousScore ? 12 : 0, items.map((item) => ({ marksAwarded: item.marksAwarded, marksAvailable: item.marksAvailable, difficulty: item.question.difficulty })));
+    return { topicSlug, topicTitle: items[0].question.topicTitle, previousScore, score: calculation.score, label: calculation.label, change: calculation.score - previousScore };
+  });
+  const response: PracticeResult = { attemptId: parsed.data.attemptId, submittedAt: new Date().toISOString(), durationSeconds: parsed.data.durationSeconds, score, availableMarks, percentage: availableMarks ? Math.round((score / availableMarks) * 100) : 0, results, masteryUpdates };
   if (!parsed.data.attemptId.startsWith("demo-") && !parsed.data.attemptId.startsWith("retry-")) {
     try {
       const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
@@ -30,6 +39,28 @@ export async function POST(request: Request) {
       const answerIds = new Map(saved.map((row) => [row.question_id, row.id])); const admin = createAdminClient();
       const { error: markError } = await admin.from("marking_results").insert(results.map((item) => ({ attempt_answer_id: answerIds.get(item.question.id)!, marks_awarded: item.marksAwarded, feedback: item, rubric_evidence: item.earnedConcepts, marked_by: "deterministic" }))); if (markError) return NextResponse.json({ error: "Marking results could not be stored." }, { status: 500 });
       const { error: attemptError } = await admin.from("attempts").update({ status: "marked", submitted_at: response.submittedAt, marked_at: response.submittedAt, score, available_marks: availableMarks, duration_seconds: parsed.data.durationSeconds }).eq("id", parsed.data.attemptId).eq("user_id", user.id); if (attemptError) return NextResponse.json({ error: "Attempt could not be finalised." }, { status: 500 });
+      const topicIds: Record<string, string> = { "systems-architecture": "20000000-0000-0000-0000-000000000001", "memory-and-storage": "20000000-0000-0000-0000-000000000002", "networks-and-protocols": "20000000-0000-0000-0000-000000000003" };
+      const { data: existingMastery } = await admin.from("topic_mastery").select("topic_id,mastery_score,questions_seen").eq("user_id", user.id);
+      const existingByTopic = new Map((existingMastery ?? []).map((item) => [item.topic_id, item]));
+      response.masteryUpdates = [...topicGroups.entries()].map(([topicSlug, items]) => {
+        const topicId = topicIds[topicSlug]; const existing = existingByTopic.get(topicId); const previousScore = Number(existing?.mastery_score ?? 0);
+        const calculation = calculateMastery(previousScore, existing?.questions_seen ?? 0, items.map((item) => ({ marksAwarded: item.marksAwarded, marksAvailable: item.marksAvailable, difficulty: item.question.difficulty })));
+        return { topicSlug, topicTitle: items[0].question.topicTitle, previousScore, score: calculation.score, label: calculation.label, change: calculation.score - previousScore };
+      });
+      const masteryRows = response.masteryUpdates.map((update) => {
+        const calculation = calculateMastery(update.previousScore, existingByTopic.get(topicIds[update.topicSlug])?.questions_seen ?? 0, topicGroups.get(update.topicSlug)!.map((item) => ({ marksAwarded: item.marksAwarded, marksAvailable: item.marksAvailable, difficulty: item.question.difficulty })));
+        const confidence = (calculation.label === "Not started" ? "new" : calculation.label.toLowerCase()) as "new" | "beginning" | "developing" | "secure" | "mastered";
+        return { user_id: user.id, topic_id: topicIds[update.topicSlug], mastery_score: calculation.score, confidence, questions_seen: calculation.questionsSeen, accuracy_score: calculation.accuracy, trend: calculation.trend, explanation: calculation.explanation, updated_at: response.submittedAt };
+      });
+      const { error: masteryError } = await admin.from("topic_mastery").upsert(masteryRows, { onConflict: "user_id,topic_id" }); if (masteryError) return NextResponse.json({ error: "Mastery could not be updated." }, { status: 500 });
+      const activityDate = response.submittedAt.slice(0, 10); const { data: activity } = await admin.from("study_activity_days").select("questions_answered,active_minutes").eq("user_id", user.id).eq("activity_date", activityDate).maybeSingle();
+      await admin.from("study_activity_days").upsert({ user_id: user.id, activity_date: activityDate, questions_answered: (activity?.questions_answered ?? 0) + results.length, active_minutes: (activity?.active_minutes ?? 0) + Math.max(1, Math.round(parsed.data.durationSeconds / 60)) }, { onConflict: "user_id,activity_date" });
+      const { data: completedAttempts } = await admin.from("attempts").select("id").eq("user_id", user.id).eq("status", "marked");
+      const completedIds = (completedAttempts ?? []).map((item) => item.id); const { data: completedAnswers } = completedIds.length ? await admin.from("attempt_answers").select("id").in("attempt_id", completedIds) : { data: [] };
+      const { data: activityDays } = await admin.from("study_activity_days").select("activity_date").eq("user_id", user.id).order("activity_date", { ascending: false }).limit(14);
+      const daySet = new Set((activityDays ?? []).map((item) => item.activity_date)); let streak = 0; const cursor = new Date(`${activityDate}T12:00:00Z`); while (daySet.has(cursor.toISOString().slice(0, 10))) { streak += 1; cursor.setUTCDate(cursor.getUTCDate() - 1); }
+      const earnedCodes = ["first-set", completedIds.length >= 10 && "ten-sets", (completedAnswers?.length ?? 0) >= 50 && "fifty-questions", masteryRows.some((item) => item.mastery_score >= 55) && "topic-secure", masteryRows.some((item) => item.mastery_score >= 75) && "mastery", streak >= 7 && "week-streak"].filter((item): item is string => Boolean(item));
+      const { data: achievements } = await admin.from("achievements").select("id,code").in("code", earnedCodes); if (achievements?.length) await admin.from("user_achievements").upsert(achievements.map((item) => ({ user_id: user.id, achievement_id: item.id })), { onConflict: "user_id,achievement_id", ignoreDuplicates: true });
     } catch { return NextResponse.json({ error: "Trusted marking is not configured." }, { status: 503 }); }
   }
   return NextResponse.json(response, { headers: { "cache-control": "private, no-store" } });

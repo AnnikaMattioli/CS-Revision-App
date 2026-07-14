@@ -60,4 +60,5 @@ export type PracticeResult = {
   availableMarks: number;
   percentage: number;
   results: QuestionResult[];
+  masteryUpdates?: Array<{ topicSlug: string; topicTitle: string; previousScore: number; score: number; label: string; change: number }>;
 };

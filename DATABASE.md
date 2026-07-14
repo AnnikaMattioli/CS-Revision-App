@@ -6,6 +6,8 @@ The migration defines the complete planned domain so later phases can build with
 
 Student activity is separated into enrolments, lesson progress, flashcard reviews, practice attempts, answers, marking results, mastery and achievements. Teacher data uses classes, memberships, assignments, targets and submissions. Administrative traceability uses reports, immutable content snapshots and audit logs.
 
+Daily aggregates in `study_activity_days` support streaks and activity summaries without exposing individual responses or repeatedly scanning complete answer histories. Topic mastery stores the bounded score, confidence label, accuracy, trend and student-facing explanation produced after trusted marking.
+
 ## Row Level Security
 
 - A student can read and update only their profile, enrolments and progress.
