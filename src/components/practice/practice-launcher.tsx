@@ -4,7 +4,9 @@ import { ArrowRight, Clock3, LoaderCircle, Shuffle, Target } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adaptive" }: { initialTopic?: string; initialMode?: string }) {
+export type PracticeTopicOption = { slug: string; title: string; icon: string; practiceAvailable: boolean };
+
+export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adaptive", topics }: { initialTopic?: string; initialMode?: string; topics: PracticeTopicOption[] }) {
   const router = useRouter();
   const [topic, setTopic] = useState(initialTopic);
   const [mode, setMode] = useState(initialMode);
@@ -12,6 +14,8 @@ export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adapti
   const [timer, setTimer] = useState("untimed");
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string>();
+  const selectedTopic = topics.find((item) => item.slug === topic);
+  const topicUnavailable = topic !== "mixed" && !selectedTopic?.practiceAvailable;
 
   async function start() {
     setStarting(true);
@@ -46,9 +50,7 @@ export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adapti
             Topic
             <select value={topic} onChange={(event) => setTopic(event.target.value)} className={selectClass}>
               <option value="mixed">Mixed topics</option>
-              <option value="systems-architecture">Systems architecture</option>
-              <option value="memory-and-storage">Memory and storage</option>
-              <option value="networks-and-protocols">Networks and protocols</option>
+              {topics.map((item) => <option key={item.slug} value={item.slug} disabled={!item.practiceAvailable}>{item.icon} {item.title}{item.practiceAvailable ? "" : " — questions coming soon"}</option>)}
             </select>
           </label>
           <label className="text-sm font-extrabold">
@@ -91,8 +93,9 @@ export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adapti
             ))}
           </div>
         </fieldset>
+        {topicUnavailable ? <p role="status" className="mt-5 rounded-xl bg-amber-50 p-3 text-sm font-bold text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">This topic is available in Learn, but its practice questions are still being written. Choose Mixed topics or another available topic.</p> : null}
         {error ? <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
-        <button onClick={start} disabled={starting} className="mt-7 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] px-6 font-black text-white shadow-lg shadow-violet-500/20 disabled:opacity-60">
+        <button onClick={start} disabled={starting || topicUnavailable} className="mt-7 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] px-6 font-black text-white shadow-lg shadow-violet-500/20 disabled:opacity-60">
           {starting ? <LoaderCircle className="animate-spin" size={18} /> : <><span>Start 10-question set</span><ArrowRight size={18} /></>}
         </button>
       </section>

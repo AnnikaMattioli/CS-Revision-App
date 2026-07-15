@@ -31,6 +31,7 @@ export type TopicMasteryInsight = {
   trend: "up" | "steady" | "down";
   explanation: string;
   lastPractised?: string;
+  practiceAvailable: boolean;
 };
 
 export type ActivityDay = { date: string; questions: number; lessons: number; flashcards: number };

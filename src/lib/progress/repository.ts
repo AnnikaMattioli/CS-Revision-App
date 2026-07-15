@@ -2,13 +2,16 @@ import "server-only";
 import { createEmptyProgress, demoProgress } from "./demo-progress";
 import { masteryLabel } from "./mastery";
 import { hasSupabaseConfig } from "@/lib/env";
+import { getActiveCourseContent } from "@/lib/content/repository";
+import { hasPracticeQuestions } from "@/lib/practice/topic-availability";
 import { createClient } from "@/lib/supabase/server";
 import type { ProgressSnapshot } from "@/types/progress";
 
 export async function getProgressSnapshot(): Promise<ProgressSnapshot> {
   if (!hasSupabaseConfig()) return createEmptyProgress();
   const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return demoProgress;
-  const [{ data: mastery }, { data: activity }, { data: attempts }, { data: achievementRows }, { data: earnedRows }] = await Promise.all([
+  const [course, { data: mastery }, { data: activity }, { data: attempts }, { data: achievementRows }, { data: earnedRows }] = await Promise.all([
+    getActiveCourseContent(),
     supabase.from("topic_mastery").select("topic_id,mastery_score,confidence,questions_seen,accuracy_score,trend,explanation,updated_at").eq("user_id", user.id),
     supabase.from("study_activity_days").select("activity_date,questions_answered,lessons_completed,flashcards_reviewed").eq("user_id", user.id).order("activity_date", { ascending: false }).limit(30),
     supabase.from("attempts").select("id,score,available_marks,started_at").eq("user_id", user.id).eq("status", "marked").order("started_at", { ascending: false }).limit(25),
@@ -16,7 +19,12 @@ export async function getProgressSnapshot(): Promise<ProgressSnapshot> {
     supabase.from("user_achievements").select("achievement_id,earned_at").eq("user_id", user.id),
   ]);
   const masteryMap = new Map((mastery ?? []).map((item) => [item.topic_id, item]));
-  const topics = demoProgress.topics.map((topic) => { const row = masteryMap.get(topic.topicId); if (!row) return { ...topic, score: 0, label: masteryLabel(0, 0), questionsSeen: 0, accuracy: 0, trend: "steady" as const, explanation: "Answer a few questions to establish your starting point.", lastPractised: undefined }; return { ...topic, score: Math.round(Number(row.mastery_score)), label: masteryLabel(Number(row.mastery_score), row.questions_seen), questionsSeen: row.questions_seen, accuracy: Math.round(Number(row.accuracy_score)), trend: row.trend as "up" | "steady" | "down", explanation: row.explanation, lastPractised: row.updated_at }; });
+  const topics = course.topics.map((topic) => {
+    const row = masteryMap.get(topic.id);
+    const base = { topicId: topic.id, slug: topic.slug, title: topic.title, icon: topic.icon, colour: topic.colour, practiceAvailable: hasPracticeQuestions(topic.slug) };
+    if (!row) return { ...base, score: 0, label: masteryLabel(0, 0), questionsSeen: 0, accuracy: 0, trend: "steady" as const, explanation: "Start the topic lesson to build your first piece of progress evidence.", lastPractised: undefined };
+    return { ...base, score: Math.round(Number(row.mastery_score)), label: masteryLabel(Number(row.mastery_score), row.questions_seen), questionsSeen: row.questions_seen, accuracy: Math.round(Number(row.accuracy_score)), trend: row.trend as "up" | "steady" | "down", explanation: row.explanation, lastPractised: row.updated_at };
+  });
   const attemptIds = (attempts ?? []).map((item) => item.id); const { data: answers } = attemptIds.length ? await supabase.from("attempt_answers").select("id").in("attempt_id", attemptIds) : { data: [] };
   const earnedMap = new Map((earnedRows ?? []).map((item) => [item.achievement_id, item.earned_at]));
   const totalQuestions = answers?.length ?? 0; const setCount = attempts?.length ?? 0; const secureCount = topics.filter((topic) => topic.score >= 55).length; const masteredCount = topics.filter((topic) => topic.score >= 75).length;

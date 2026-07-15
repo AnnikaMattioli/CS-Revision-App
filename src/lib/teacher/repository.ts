@@ -1,10 +1,7 @@
 import "server-only";
 import { demoClass, demoClasses, demoClassInsights } from "./demo-teacher";
-import { demoCourse } from "@/lib/content/demo-content";
 import { requireTeacher } from "./auth";
 import type { ClassAssignment, ClassStudent, TeacherClass, TopicClassInsight } from "@/types/teacher";
-
-const topicMap = new Map(demoCourse.topics.map((topic) => [topic.id, topic]));
 
 export async function getTeacherClasses(): Promise<TeacherClass[]> {
   const actor = await requireTeacher(); if (!actor) return []; if (actor.demo) return demoClasses;
@@ -33,8 +30,11 @@ export async function getTeacherClass(classId: string): Promise<TeacherClass | n
     actor.supabase.from("assignment_targets").select("assignment_id,target_type,topic_id,practice_set_id"),
     row.course_id ? actor.supabase.from("courses").select("title").eq("id", row.course_id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
+  const topicIds = (targetRows ?? []).flatMap((target) => target.topic_id ? [target.topic_id] : []);
+  const { data: topicRows } = topicIds.length ? await actor.supabase.from("topics").select("id,title").in("id", topicIds) : { data: [] };
+  const topicTitles = new Map((topicRows ?? []).map((topic) => [topic.id, topic.title]));
   const students: ClassStudent[] = (people ?? []).map((person) => ({ id: person.student_id, displayName: person.display_name, joinedAt: person.joined_at, assignmentCompletion: assignmentRows?.length ? Math.round((submissionRows ?? []).filter((s) => s.student_id === person.student_id).length / assignmentRows.length * 100) : 0, averageMastery: 0 }));
-  const assignments: ClassAssignment[] = (assignmentRows ?? []).map((item) => { const target = (targetRows ?? []).find((t) => t.assignment_id === item.id); const topic = target?.topic_id ? topicMap.get(target.topic_id) : undefined; return { id: item.id, title: item.title, instructions: item.instructions, dueAt: item.due_at ?? undefined, status: item.status, targetType: target?.target_type ?? "topic", targetLabel: topic?.title ?? (target?.target_type === "practice_set" ? "Timed practice set" : "Course topic"), completedCount: (submissionRows ?? []).filter((s) => s.assignment_id === item.id).length, studentCount: students.length }; });
+  const assignments: ClassAssignment[] = (assignmentRows ?? []).map((item) => { const target = (targetRows ?? []).find((t) => t.assignment_id === item.id); return { id: item.id, title: item.title, instructions: item.instructions, dueAt: item.due_at ?? undefined, status: item.status, targetType: target?.target_type ?? "topic", targetLabel: (target?.topic_id ? topicTitles.get(target.topic_id) : undefined) ?? (target?.target_type === "practice_set" ? "Timed practice set" : "Course topic"), completedCount: (submissionRows ?? []).filter((s) => s.assignment_id === item.id).length, studentCount: students.length }; });
   return { id: row.id, name: row.name, courseTitle: course?.title ?? "Computer Science", joinCodeHint: row.join_code_hint, archived: Boolean(row.archived_at), students, assignments };
 }
 
@@ -42,12 +42,29 @@ export async function getClassInsights(classId: string): Promise<TopicClassInsig
   if (classId.startsWith("demo-")) return demoClassInsights;
   const actor = await requireTeacher(); if (!actor || actor.demo) return [];
   const { data } = await actor.supabase.rpc("teacher_class_mastery", { requested_class: classId });
-  return (data ?? []).map((row) => ({ topicId: row.topic_id, title: topicMap.get(row.topic_id)?.title ?? "Course topic", averageMastery: Math.round(Number(row.average_mastery)), secureStudents: Number(row.secure_students), studentCount: Number(row.student_count) }));
+  const ids = (data ?? []).map((row) => row.topic_id); const { data: topicRows } = ids.length ? await actor.supabase.from("topics").select("id,title").in("id", ids) : { data: [] }; const titles = new Map((topicRows ?? []).map((topic) => [topic.id, topic.title]));
+  return (data ?? []).map((row) => ({ topicId: row.topic_id, title: titles.get(row.topic_id) ?? "Course topic", averageMastery: Math.round(Number(row.average_mastery)), secureStudents: Number(row.secure_students), studentCount: Number(row.student_count) }));
 }
 
 export async function getStudentMastery(classId: string, studentId: string) {
   if (classId.startsWith("demo-") && studentId.startsWith("demo-")) return demoClassInsights.map((topic, index) => ({ ...topic, averageMastery: [78, 61, 46][index], secureStudents: 0, studentCount: 1 }));
   const actor = await requireTeacher(); if (!actor || actor.demo) return [];
   const { data } = await actor.supabase.rpc("teacher_student_mastery", { requested_class: classId, requested_student: studentId });
-  return (data ?? []).map((row) => ({ topicId: row.topic_id, title: topicMap.get(row.topic_id)?.title ?? "Course topic", averageMastery: Math.round(Number(row.mastery_score)), secureStudents: Number(row.mastery_score) >= 55 ? 1 : 0, studentCount: 1 }));
+  const ids = (data ?? []).map((row) => row.topic_id); const { data: topicRows } = ids.length ? await actor.supabase.from("topics").select("id,title").in("id", ids) : { data: [] }; const titles = new Map((topicRows ?? []).map((topic) => [topic.id, topic.title]));
+  return (data ?? []).map((row) => ({ topicId: row.topic_id, title: titles.get(row.topic_id) ?? "Course topic", averageMastery: Math.round(Number(row.mastery_score)), secureStudents: Number(row.mastery_score) >= 55 ? 1 : 0, studentCount: 1 }));
+}
+
+export async function getClassTopicOptions(classId: string) {
+  if (classId.startsWith("demo-")) return [
+    { id: "20000000-0000-0000-0000-000000000001", title: "Systems architecture" },
+    { id: "20000000-0000-0000-0000-000000000002", title: "Memory and storage" },
+    { id: "20000000-0000-0000-0000-000000000003", title: "Networks and protocols" },
+  ];
+  const actor = await requireTeacher(); if (!actor || actor.demo) return [];
+  const { data: item } = await actor.supabase.from("classes").select("course_id").eq("id", classId).eq("teacher_id", actor.userId).maybeSingle();
+  if (!item?.course_id) return [];
+  const { data: sections } = await actor.supabase.from("specification_sections").select("id").eq("course_id", item.course_id).eq("status", "published");
+  if (!sections?.length) return [];
+  const { data: topics } = await actor.supabase.from("topics").select("id,title,sort_order").in("specification_section_id", sections.map((section) => section.id)).eq("status", "published").order("sort_order");
+  return (topics ?? []).map((topic) => ({ id: topic.id, title: topic.title }));
 }
