@@ -1,8 +1,8 @@
 # Bytewise
 
-Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. The repository now contains **Phases 1–6**: foundation, course content, secure practice, explainable adaptation, timed Exam Mode and teacher tools. Students can learn, revise, complete autosaved marked sets, understand mastery, follow recommendations, build streaks, unlock achievements, sit configurable timed tests and join classes. Teachers can create classes, rotate secure joining codes, assign topics or timed tests, manage membership and review privacy-minimising progress signals.
+Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. The repository now contains **Phases 1–7**: foundation, course content, secure practice, explainable adaptation, timed Exam Mode, teacher tools and administrator tools. Students can learn, revise, complete autosaved marked sets, understand mastery, follow recommendations, build streaks, unlock achievements, sit configurable timed tests and join classes. Teachers can manage classes and assignments. Administrators can manage content, protected questions, imports, reports and roles through audited workflows.
 
-The app uses clearly labelled representative data when Supabase is not configured. Once connected, authentication, content, progress, practice attempts and teacher tools use the database. Administrator features remain reserved for Phase 7.
+The app uses clearly labelled representative data when Supabase is not configured. Once connected, authentication, learning workflows, teacher tools and audited administrator workflows use the database.
 
 ## Local setup
 
@@ -61,7 +61,7 @@ npm run test:e2e
 - Adaptive ranking is fully implemented, but its variety is naturally limited until the representative ten-question bank expands.
 - Exam Mode uses the same ten-question representative bank; it demonstrates the complete secure workflow rather than claiming full mock-paper coverage.
 - Written marking is deterministic and explainable, but production rubrics still require subject-expert review and moderation.
-- Administrator interfaces arrive in Phase 7.
+- Administrative imports are limited to 1 MB and 250 questions per transaction; expand these limits only after deployment load testing.
 - Sensitive endpoints, including teacher joining codes, should receive deployment-edge rate limiting in Phase 8; joining responses already avoid revealing whether a class exists.
 
 See [ROADMAP.md](ROADMAP.md) for the section-by-section plan.

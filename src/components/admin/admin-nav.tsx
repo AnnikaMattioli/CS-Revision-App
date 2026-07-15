@@ -1,0 +1,4 @@
+import { BookCopy, ClipboardList, FileUp, History, LayoutDashboard, ShieldCheck, UsersRound } from "lucide-react";
+import Link from "next/link";
+const items=[["Overview","/admin",LayoutDashboard],["Content","/admin/content",BookCopy],["Questions","/admin/questions",ClipboardList],["Imports","/admin/imports",FileUp],["Reports","/admin/reports",ShieldCheck],["Roles","/admin/roles",UsersRound],["Audit log","/admin/audit",History]] as const;
+export function AdminNav(){return <nav aria-label="Admin navigation" className="mb-8 flex gap-2 overflow-x-auto pb-2">{items.map(([label,href,Icon])=><Link key={href} href={href} className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl border bg-[var(--surface)] px-4 text-sm font-black hover:border-[var(--violet)] hover:text-[var(--violet)]"><Icon size={17}/>{label}</Link>)}</nav>}

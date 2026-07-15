@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, BookOpen, Brain, ChartNoAxesCombined, ClipboardCheck, FlaskConical, Home, LogOut, Menu, NotebookTabs, Settings, Users, X } from "lucide-react";
+import { Award, BookOpen, Brain, ChartNoAxesCombined, ClipboardCheck, FlaskConical, Home, LogOut, Menu, NotebookTabs, Settings, ShieldCheck, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +19,7 @@ const nav = [
   { label: "Progress", href: "/progress", icon: ChartNoAxesCombined, available: true },
   { label: "Achievements", href: "/achievements", icon: Award, available: true },
   { label: "Classes", href: "/classes", icon: Users, available: true },
+  { label: "Admin", href: "/admin", icon: ShieldCheck, available: true },
 ];
 
 export function Sidebar() {

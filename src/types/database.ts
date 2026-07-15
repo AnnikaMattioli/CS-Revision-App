@@ -41,8 +41,8 @@ export type Database = {
           exam_board_id: string;
           published: boolean;
         };
-        Insert: never;
-        Update: never;
+        Insert: { qualification_id: string; exam_board_id: string; slug: string; title: string; description?: string; accent_colour?: string; published?: boolean };
+        Update: { title?: string; description?: string; accent_colour?: string; published?: boolean };
         Relationships: [];
       };
       user_course_enrolments: {
@@ -60,27 +60,27 @@ export type Database = {
       };
       specification_sections: {
         Row: { id: string; course_id: string; code: string; title: string; description: string; sort_order: number; status: "draft" | "published" | "archived" };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { course_id: string; code: string; title: string; description?: string; sort_order?: number; status?: "draft" | "published" | "archived" }; Update: { title?: string; description?: string; sort_order?: number; status?: "draft" | "published" | "archived" }; Relationships: [];
       };
       topics: {
         Row: { id: string; specification_section_id: string; slug: string; title: string; description: string; icon: string | null; estimated_minutes: number; learning_objectives: string[]; sort_order: number; status: "draft" | "published" | "archived" };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { specification_section_id: string; slug: string; title: string; description?: string; icon?: string | null; estimated_minutes?: number; learning_objectives?: string[]; sort_order?: number; status?: "draft" | "published" | "archived" }; Update: { title?: string; description?: string; icon?: string | null; estimated_minutes?: number; learning_objectives?: string[]; sort_order?: number; status?: "draft" | "published" | "archived" }; Relationships: [];
       };
       subtopics: {
         Row: { id: string; topic_id: string; slug: string; title: string; description: string; sort_order: number; status: "draft" | "published" | "archived" };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { topic_id: string; slug: string; title: string; description?: string; sort_order?: number; status?: "draft" | "published" | "archived" }; Update: { title?: string; description?: string; sort_order?: number; status?: "draft" | "published" | "archived" }; Relationships: [];
       };
       lessons: {
         Row: { id: string; subtopic_id: string; slug: string; title: string; summary: string; estimated_minutes: number; sort_order: number; status: "draft" | "published" | "archived" };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { subtopic_id: string; slug: string; title: string; summary?: string; estimated_minutes?: number; sort_order?: number; status?: "draft" | "published" | "archived" }; Update: { title?: string; summary?: string; estimated_minutes?: number; sort_order?: number; status?: "draft" | "published" | "archived" }; Relationships: [];
       };
       lesson_sections: {
         Row: { id: string; lesson_id: string; heading: string; body: { paragraphs?: string[]; callout?: { type: "definition" | "tip" | "warning"; title: string; text: string } }; sort_order: number };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { lesson_id: string; heading: string; body?: unknown; sort_order?: number }; Update: { heading?: string; body?: unknown; sort_order?: number }; Relationships: [];
       };
       flashcards: {
         Row: { id: string; subtopic_id: string; front: string; back: string; hint: string | null; sort_order: number; status: "draft" | "published" | "archived" };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { subtopic_id: string; front: string; back: string; hint?: string | null; sort_order?: number; status?: "draft" | "published" | "archived" }; Update: { front?: string; back?: string; hint?: string | null; sort_order?: number; status?: "draft" | "published" | "archived" }; Relationships: [];
       };
       flashcard_reviews: {
         Row: { id: string; user_id: string; flashcard_id: string; rating: number; reviewed_at: string; next_review_at: string | null };
@@ -89,7 +89,7 @@ export type Database = {
       };
       worked_solutions: {
         Row: { id: string; subtopic_id: string; title: string; prompt: string; steps: Array<{ title: string; explanation: string; working?: string }>; final_answer: string; status: "draft" | "published" | "archived" };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { subtopic_id: string; title: string; prompt: string; steps?: unknown; final_answer: string; status?: "draft" | "published" | "archived" }; Update: { title?: string; prompt?: string; steps?: unknown; final_answer?: string; status?: "draft" | "published" | "archived" }; Relationships: [];
       };
       lesson_progress: {
         Row: { user_id: string; lesson_id: string; completed: boolean; progress_percent: number; last_viewed_at: string; completed_at: string | null };
@@ -98,12 +98,12 @@ export type Database = {
         Relationships: [];
       };
       questions: {
-        Row: { id: string; subtopic_id: string; type: string; difficulty: string; prompt: PublicQuestion; marks: number; calculator_allowed: boolean; status: "draft" | "published" | "archived"; version: number; created_by: string | null; archived_at: string | null; created_at: string; updated_at: string };
-        Insert: never; Update: never; Relationships: [];
+        Row: { id: string; subtopic_id: string; type: string; difficulty: string; prompt: PublicQuestion; marks: number; calculator_allowed: boolean; status: "draft" | "published" | "archived"; version: number; created_by: string | null; archived_at: string | null; estimated_seconds: number; stimulus: string | null; image_ref: string | null; code_block: string | null; explanation: string; hints: string[]; common_mistakes: string[]; source_type: string; source_date: string | null; import_key: string | null; created_at: string; updated_at: string };
+        Insert: { subtopic_id: string; type: string; difficulty: string; prompt: unknown; marks: number; calculator_allowed?: boolean; status?: "draft" | "published" | "archived"; created_by?: string | null; estimated_seconds?: number; stimulus?: string | null; image_ref?: string | null; code_block?: string | null; explanation?: string; hints?: string[]; common_mistakes?: string[]; source_type?: string; source_date?: string | null; import_key?: string | null }; Update: { subtopic_id?: string; type?: string; difficulty?: string; prompt?: unknown; marks?: number; calculator_allowed?: boolean; status?: "draft" | "published" | "archived"; archived_at?: string | null; version?: number; estimated_seconds?: number; stimulus?: string | null; image_ref?: string | null; code_block?: string | null; explanation?: string; hints?: string[]; common_mistakes?: string[] }; Relationships: [];
       };
       question_answer_rules: {
         Row: { id: string; question_id: string; rule_type: string; rule: AnswerRule; feedback: string | null; created_at: string; updated_at: string };
-        Insert: never; Update: never; Relationships: [];
+        Insert: { question_id: string; rule_type: string; rule: AnswerRule; feedback?: string | null }; Update: { rule_type?: string; rule?: AnswerRule; feedback?: string | null }; Relationships: [];
       };
       practice_sets: {
         Row: { id: string; owner_id: string | null; course_id: string; title: string; mode: string; time_limit_seconds: number | null; exam_kind: string | null; allow_backwards: boolean; warn_unanswered: boolean; results_release: string; results_released_at: string | null; grade_boundaries: unknown | null; configuration: unknown; created_at: string };
@@ -186,12 +186,22 @@ export type Database = {
         Insert: { assignment_id: string; student_id: string; attempt_id?: string | null; submitted_at?: string };
         Update: { attempt_id?: string | null; submitted_at?: string }; Relationships: [];
       };
+      question_reports: {
+        Row: { id: string; question_id: string | null; reporter_id: string; category: string; details: string; status: "open" | "reviewing" | "resolved" | "dismissed"; internal_notes: string | null; resolved_by: string | null; created_at: string; updated_at: string };
+        Insert: { question_id?: string | null; reporter_id: string; category: string; details: string }; Update: { status?: "open" | "reviewing" | "resolved" | "dismissed"; internal_notes?: string | null; resolved_by?: string | null }; Relationships: [];
+      };
+      content_versions: { Row: { id: string; entity_type: string; entity_id: string; version: number; snapshot: unknown; changed_by: string; created_at: string }; Insert: { entity_type: string; entity_id: string; version: number; snapshot: unknown; changed_by: string }; Update: never; Relationships: [] };
+      admin_audit_logs: { Row: { id: string; actor_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Record<string, unknown>; created_at: string }; Insert: { actor_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Record<string, unknown> }; Update: never; Relationships: [] };
     };
     Views: Record<string, never>;
     Functions: {
       teacher_class_students: { Args: { requested_class: string }; Returns: Array<{ student_id: string; display_name: string; joined_at: string }> };
       teacher_class_mastery: { Args: { requested_class: string }; Returns: Array<{ topic_id: string; average_mastery: number; secure_students: number; student_count: number }> };
       teacher_student_mastery: { Args: { requested_class: string; requested_student: string }; Returns: Array<{ topic_id: string; mastery_score: number; confidence: string; accuracy_score: number; questions_seen: number; updated_at: string }> };
+      admin_users: { Args: Record<string, never>; Returns: Array<{ user_id: string; display_name: string; roles: UserRole[] }> };
+      admin_set_user_role: { Args: { target_user: string; requested_role: UserRole }; Returns: undefined };
+      admin_question_performance: { Args: Record<string, never>; Returns: Array<{ question_id: string; attempts: number; average_percent: number; incorrect_count: number }> };
+      admin_import_questions: { Args: { payload: unknown }; Returns: number };
     };
     Enums: { app_role: UserRole; qualification_level: QualificationLevel };
     CompositeTypes: Record<string, never>;

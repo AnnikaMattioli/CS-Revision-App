@@ -24,9 +24,9 @@ Timed assessments, question palette, warnings, auto-submission, results and time
 
 Teacher dashboard, classes, one-time secure joining codes, assignment creation and completion, class membership controls, individual learning evidence and privacy-minimising aggregate analytics.
 
-## Phase 7 — Administrator tools
+## Phase 7 — Administrator tools (completed)
 
-Content management, question editor, validated import preview, reports, role management and audits.
+Audited content management, protected question editing, validated CSV/JSON preview and transactional imports, reports, anonymised performance, server-enforced role management and read-only audit history.
 
 ## Phase 8 — Quality and deployment
 
