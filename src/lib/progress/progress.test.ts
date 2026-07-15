@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { calculateMastery, masteryLabel } from "./mastery";
 import { selectAdaptiveQuestions } from "./adaptive";
+import { createEmptyProgress } from "./demo-progress";
+
+describe("new learner progress", () => {
+  it("starts every metric and topic at zero", () => {
+    const progress = createEmptyProgress();
+    expect(progress.totalQuestions).toBe(0);
+    expect(progress.recentAccuracy).toBe(0);
+    expect(progress.currentStreak).toBe(0);
+    expect(progress.topics.every((topic) => topic.score === 0 && topic.label === "Not started")).toBe(true);
+    expect(progress.achievements.every((achievement) => achievement.progress === 0 && !achievement.earnedAt)).toBe(true);
+  });
+});
 
 describe("mastery calculation", () => {
   it("uses understandable labels", () => {

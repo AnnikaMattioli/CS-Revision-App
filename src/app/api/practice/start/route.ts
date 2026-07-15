@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const limited = rateLimit(request, "practice-start", { limit: 60, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid settings." }, { status: 400 });
   const candidates = questionBank.map(({ id, topicSlug, difficulty }) => ({ id, topicSlug, difficulty }));
-  const demoMastery = { "systems-architecture": 72, "memory-and-storage": 54, "networks-and-protocols": 34 };
+  const demoMastery = { "systems-architecture": 0, "memory-and-storage": 0, "networks-and-protocols": 0 };
   const select = (mastery: Record<string, number>, history: QuestionHistory[] = []) => {
     const chosen = selectAdaptiveQuestions({ candidates, topicMastery: mastery, history, count: 10, currentTopic: parsed.data.topic === "mixed" ? undefined : parsed.data.topic });
     let ordered: Array<{ id: string; topicSlug: string; difficulty: string }> = parsed.data.mode === "all" ? candidates.slice(0, 10) : parsed.data.mode === "unseen" ? [...chosen].sort((a, b) => (history.find((item) => item.questionId === a.id)?.seenCount ?? 0) - (history.find((item) => item.questionId === b.id)?.seenCount ?? 0)) : chosen;

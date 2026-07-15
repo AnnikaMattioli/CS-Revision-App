@@ -34,6 +34,8 @@ test("completed practice appears in attempt history", async ({ page }) => {
   await page.getByRole("button", { name: "Submit set" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Submit set" }).click();
   await expect(page).toHaveURL(/\/practise\/results\/demo-/, { timeout: 15_000 });
+  await page.goto("/dashboard");
+  await expect(page.getByText("Questions answered").locator("..")).toContainText("10");
   await page.goto("/practise/history");
   await expect(page.getByText("Mixed-topic practice")).toBeVisible();
   await expect(page.getByRole("link", { name: "Review" })).toBeVisible();

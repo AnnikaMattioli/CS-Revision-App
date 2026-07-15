@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   const score = results.reduce((total, result) => total + result.marksAwarded, 0); const availableMarks = results.reduce((total, result) => total + result.marksAvailable, 0);
   const topicGroups = new Map<string, typeof results>();
   results.forEach((result) => topicGroups.set(result.question.topicSlug, [...(topicGroups.get(result.question.topicSlug) ?? []), result]));
-  const demoScores: Record<string, number> = { "systems-architecture": 72, "memory-and-storage": 54, "networks-and-protocols": 34 };
+  const demoScores: Record<string, number> = { "systems-architecture": 0, "memory-and-storage": 0, "networks-and-protocols": 0 };
   const masteryUpdates = [...topicGroups.entries()].map(([topicSlug, items]) => {
     const previousScore = demoScores[topicSlug] ?? 0;
     const calculation = calculateMastery(previousScore, previousScore ? 12 : 0, items.map((item) => ({ marksAwarded: item.marksAwarded, marksAvailable: item.marksAvailable, difficulty: item.question.difficulty })));

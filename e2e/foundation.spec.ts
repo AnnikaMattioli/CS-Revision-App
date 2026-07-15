@@ -11,7 +11,7 @@ test("landing page leads to account creation", async ({ page }) => {
 test("demo dashboard is responsive and labelled", async ({ page }) => {
   await page.goto("/dashboard");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Ready to make progress");
-  await expect(page.getByText(/Demo mode/)).toBeVisible();
+  await expect(page.getByText(/Local demo profile/)).toBeVisible();
 });
 
 test("demo users can sign in without Supabase credentials", async ({ page }) => {
@@ -20,6 +20,20 @@ test("demo users can sign in without Supabase credentials", async ({ page }) => 
   await page.getByRole("button", { name: "Continue with demo account" }).click();
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Ready to make progress");
+});
+
+test("a new local profile uses its own name and starts at zero", async ({ page }) => {
+  await page.goto("/sign-up");
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("Your name").fill("Jamie");
+  await page.getByLabel("Email address").fill("jamie@example.com");
+  await page.locator('input[name="password"]').fill("starting-fresh");
+  await page.getByRole("button", { name: "Create my account" }).click();
+  await expect(page).toHaveURL(/\/onboarding/);
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Jamie");
+  await expect(page.getByText("Course mastery").locator("..")).toContainText("0%");
+  await expect(page.getByText("Questions answered").locator("..")).toContainText("0");
 });
 
 test("student can open a topic and complete a lesson", async ({ page }) => {

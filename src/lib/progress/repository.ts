@@ -1,12 +1,12 @@
 import "server-only";
-import { demoProgress } from "./demo-progress";
+import { createEmptyProgress, demoProgress } from "./demo-progress";
 import { masteryLabel } from "./mastery";
 import { hasSupabaseConfig } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { ProgressSnapshot } from "@/types/progress";
 
 export async function getProgressSnapshot(): Promise<ProgressSnapshot> {
-  if (!hasSupabaseConfig()) return demoProgress;
+  if (!hasSupabaseConfig()) return createEmptyProgress();
   const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return demoProgress;
   const [{ data: mastery }, { data: activity }, { data: attempts }, { data: achievementRows }, { data: earnedRows }] = await Promise.all([
     supabase.from("topic_mastery").select("topic_id,mastery_score,confidence,questions_seen,accuracy_score,trend,explanation,updated_at").eq("user_id", user.id),

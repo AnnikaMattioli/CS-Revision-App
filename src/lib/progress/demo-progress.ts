@@ -34,6 +34,19 @@ export const demoProgress: ProgressSnapshot = {
   ],
 };
 
+export function createEmptyProgress(): ProgressSnapshot {
+  const today = new Date();
+  return {
+    topics: topics.map((topic) => ({ ...topic, score: 0, label: "Not started", questionsSeen: 0, accuracy: 0, trend: "steady", explanation: "Complete some practice to establish your starting point.", lastPractised: undefined })),
+    currentStreak: 0,
+    bestStreak: 0,
+    totalQuestions: 0,
+    recentAccuracy: 0,
+    activity: Array.from({ length: 7 }, (_, offset) => { const date = new Date(today); date.setDate(today.getDate() - (6 - offset)); return { date: date.toISOString().slice(0, 10), questions: 0, lessons: 0, flashcards: 0 }; }),
+    achievements: demoProgress.achievements.map((item) => ({ ...item, earnedAt: undefined, progress: 0 })),
+  };
+}
+
 export function applyLocalHistory(snapshot: ProgressSnapshot, history: PracticeResult[]): ProgressSnapshot {
   if (!history.length) return snapshot;
   const topicsWithHistory = snapshot.topics.map((topic) => {
@@ -45,11 +58,21 @@ export function applyLocalHistory(snapshot: ProgressSnapshot, history: PracticeR
   const answered = history.reduce((sum, item) => sum + item.results.length, 0);
   const earned = history.reduce((sum, item) => sum + item.score, 0);
   const available = history.reduce((sum, item) => sum + item.availableMarks, 0);
+  const activeDates = new Set(history.map((item) => item.submittedAt.slice(0, 10)));
+  let currentStreak = 0; const cursor = new Date();
+  while (activeDates.has(cursor.toISOString().slice(0, 10))) { currentStreak += 1; cursor.setDate(cursor.getDate() - 1); }
+  const activity = snapshot.activity.map((day) => ({ ...day, questions: history.filter((item) => item.submittedAt.slice(0, 10) === day.date).reduce((sum, item) => sum + item.results.length, 0) }));
+  const secureTopics = topicsWithHistory.filter((topic) => topic.score >= 55).length;
+  const masteredTopics = topicsWithHistory.filter((topic) => topic.score >= 75).length;
+  const achievementProgress: Record<string, number> = { "first-set": history.length, "week-streak": currentStreak, "fifty-questions": answered, "topic-secure": secureTopics, mastery: masteredTopics, "ten-sets": history.length };
   return {
     ...snapshot,
     topics: topicsWithHistory,
     totalQuestions: snapshot.totalQuestions + answered,
     recentAccuracy: available ? Math.round((earned / available) * 100) : snapshot.recentAccuracy,
-    achievements: snapshot.achievements.map((item) => item.code === "ten-sets" ? { ...item, progress: Math.min(item.target, Math.max(item.progress, history.length)), earnedAt: history.length >= item.target ? history[0].submittedAt : item.earnedAt } : item),
+    activity,
+    currentStreak,
+    bestStreak: Math.max(snapshot.bestStreak, currentStreak),
+    achievements: snapshot.achievements.map((item) => { const progress = achievementProgress[item.code] ?? item.progress; return { ...item, progress: Math.min(item.target, progress), earnedAt: progress >= item.target ? history[0].submittedAt : item.earnedAt }; }),
   };
 }
