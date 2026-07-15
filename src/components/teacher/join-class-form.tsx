@@ -1,0 +1,11 @@
+"use client";
+
+import { DoorOpen, LoaderCircle } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+export function JoinClassForm() {
+  const [code, setCode] = useState(""); const [busy, setBusy] = useState(false); const [ready, setReady] = useState(false); const [error, setError] = useState<string>(); const [joined, setJoined] = useState<{ classId: string; className: string }>(); useEffect(() => { const frame = requestAnimationFrame(() => setReady(true)); return () => cancelAnimationFrame(frame); }, []);
+  async function submit(event: React.FormEvent) { event.preventDefault(); setBusy(true); setError(undefined); const response = await fetch("/api/classes/join", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code }) }); const body = await response.json(); setBusy(false); if (!response.ok) return setError(body.error ?? "The class could not be joined."); setJoined(body); }
+  return <section className="soft-card p-6"><div className="flex items-center gap-3"><DoorOpen className="text-[var(--teal)]" /><h2 className="text-xl font-black">Join a class</h2></div>{joined ? <div className="mt-4 rounded-xl bg-teal-50 p-4 font-bold text-teal-900 dark:bg-teal-500/10 dark:text-teal-100"><p>You joined {joined.className}.</p><Link href={`/classes/${joined.classId}`} className="mt-2 inline-block font-black underline">View class assignments</Link></div> : <form onSubmit={submit} className="mt-4"><label className="text-sm font-black">Joining code<input aria-label="Joining code" disabled={!ready} required value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="DEMO42" autoComplete="off" className="mt-2 h-12 w-full rounded-xl border bg-[var(--surface)] px-4 font-black uppercase tracking-[0.18em] disabled:opacity-60" /></label><button disabled={busy || !ready} className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--teal)] px-4 font-black text-slate-950 disabled:opacity-50">{busy ? <LoaderCircle className="animate-spin" /> : "Join safely"}</button>{error ? <p role="alert" className="mt-3 text-sm font-bold text-red-600">{error}</p> : null}</form>}<p className="mt-4 text-xs leading-5 text-muted">Demo code: DEMO42. Invalid codes always return the same response to prevent class discovery.</p></section>;
+}

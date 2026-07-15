@@ -1,8 +1,8 @@
 # Bytewise
 
-Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. The repository now contains **Phases 1–5**: foundation, course content, secure practice, explainable adaptation, and timed Exam Mode. Students can learn, revise, complete autosaved marked sets, understand mastery, follow recommendations, build streaks, unlock achievements and sit configurable timed tests.
+Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. The repository now contains **Phases 1–6**: foundation, course content, secure practice, explainable adaptation, timed Exam Mode and teacher tools. Students can learn, revise, complete autosaved marked sets, understand mastery, follow recommendations, build streaks, unlock achievements, sit configurable timed tests and join classes. Teachers can create classes, rotate secure joining codes, assign topics or timed tests, manage membership and review privacy-minimising progress signals.
 
-The app uses clearly labelled representative data when Supabase is not configured. Once connected, authentication, content, progress and practice attempts use the database. Exam, teacher and administrator features remain labelled “Soon” rather than presented as working controls.
+The app uses clearly labelled representative data when Supabase is not configured. Once connected, authentication, content, progress, practice attempts and teacher tools use the database. Administrator features remain reserved for Phase 7.
 
 ## Local setup
 
@@ -27,7 +27,7 @@ Requirements: Node.js 20.9 or newer, npm, and optionally the Supabase CLI.
    cp .env.example .env.local
    ```
 
-4. For the visual demo, leave `NEXT_PUBLIC_DEMO_MODE=true`. For real accounts, create a free Supabase project, place its Project URL, **publishable** key and server-only secret key in `.env.local`, and set demo mode to `false`. `SUPABASE_SECRET_KEY` is used only by trusted marking routes. Never put a secret or service-role key in a `NEXT_PUBLIC_` variable.
+4. For the visual demo, leave `NEXT_PUBLIC_DEMO_MODE=true`. For real accounts, create a free Supabase project, place its Project URL, **publishable** key and server-only secret key in `.env.local`, set a long random `CLASS_CODE_PEPPER`, and set demo mode to `false`. Server secrets are used only by trusted routes. Never put them in a `NEXT_PUBLIC_` variable.
 
 5. In Supabase SQL Editor, apply both files in [`supabase/migrations`](supabase/migrations) in filename order, followed by [`supabase/seed.sql`](supabase/seed.sql). With the CLI, use `supabase link`, then `supabase db push` and `supabase db seed`.
 
@@ -61,7 +61,7 @@ npm run test:e2e
 - Adaptive ranking is fully implemented, but its variety is naturally limited until the representative ten-question bank expands.
 - Exam Mode uses the same ten-question representative bank; it demonstrates the complete secure workflow rather than claiming full mock-paper coverage.
 - Written marking is deterministic and explainable, but production rubrics still require subject-expert review and moderation.
-- Teacher and administrator interfaces arrive in Phases 6 and 7.
-- Rate limiting for sensitive production endpoints should be added at the deployment edge in Phase 8.
+- Administrator interfaces arrive in Phase 7.
+- Sensitive endpoints, including teacher joining codes, should receive deployment-edge rate limiting in Phase 8; joining responses already avoid revealing whether a class exists.
 
 See [ROADMAP.md](ROADMAP.md) for the section-by-section plan.

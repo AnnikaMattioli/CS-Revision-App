@@ -158,9 +158,41 @@ export type Database = {
         Insert: { user_id: string; achievement_id: string; earned_at?: string };
         Update: never; Relationships: [];
       };
+      classes: {
+        Row: { id: string; teacher_id: string; course_id: string | null; name: string; join_code_hash: string; join_code_hint: string; archived_at: string | null; join_code_rotated_at: string; created_at: string; updated_at: string };
+        Insert: { teacher_id: string; course_id?: string | null; name: string; join_code_hash: string; join_code_hint: string };
+        Update: { name?: string; join_code_hash?: string; join_code_hint?: string; join_code_rotated_at?: string; archived_at?: string | null };
+        Relationships: [];
+      };
+      class_memberships: {
+        Row: { class_id: string; student_id: string; joined_at: string; removed_at: string | null };
+        Insert: { class_id: string; student_id: string; removed_at?: string | null };
+        Update: { removed_at?: string | null };
+        Relationships: [];
+      };
+      assignments: {
+        Row: { id: string; class_id: string; title: string; instructions: string; due_at: string | null; status: "draft" | "published" | "closed"; created_at: string; updated_at: string };
+        Insert: { class_id: string; title: string; instructions?: string; due_at?: string | null; status?: "draft" | "published" | "closed" };
+        Update: { title?: string; instructions?: string; due_at?: string | null; status?: "draft" | "published" | "closed" };
+        Relationships: [];
+      };
+      assignment_targets: {
+        Row: { id: string; assignment_id: string; target_type: "topic" | "practice_set"; topic_id: string | null; practice_set_id: string | null };
+        Insert: { assignment_id: string; target_type: "topic" | "practice_set"; topic_id?: string | null; practice_set_id?: string | null };
+        Update: never; Relationships: [];
+      };
+      assignment_submissions: {
+        Row: { assignment_id: string; student_id: string; attempt_id: string | null; submitted_at: string };
+        Insert: { assignment_id: string; student_id: string; attempt_id?: string | null; submitted_at?: string };
+        Update: { attempt_id?: string | null; submitted_at?: string }; Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      teacher_class_students: { Args: { requested_class: string }; Returns: Array<{ student_id: string; display_name: string; joined_at: string }> };
+      teacher_class_mastery: { Args: { requested_class: string }; Returns: Array<{ topic_id: string; average_mastery: number; secure_students: number; student_count: number }> };
+      teacher_student_mastery: { Args: { requested_class: string; requested_student: string }; Returns: Array<{ topic_id: string; mastery_score: number; confidence: string; accuracy_score: number; questions_seen: number; updated_at: string }> };
+    };
     Enums: { app_role: UserRole; qualification_level: QualificationLevel };
     CompositeTypes: Record<string, never>;
   };

@@ -20,9 +20,9 @@ Mastery calculation, progress charts, adaptive selection, weak-area recommendati
 
 Timed assessments, question palette, warnings, auto-submission, results and time analysis.
 
-## Phase 6 — Teacher tools
+## Phase 6 — Teacher tools (completed)
 
-Classes, secure joining codes, assignments, class membership and minimal-data analytics.
+Teacher dashboard, classes, one-time secure joining codes, assignment creation and completion, class membership controls, individual learning evidence and privacy-minimising aggregate analytics.
 
 ## Phase 7 — Administrator tools
 

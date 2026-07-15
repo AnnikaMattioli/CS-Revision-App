@@ -18,7 +18,7 @@ const nav = [
   { label: "Exam practice", href: "/exam-practice", icon: ClipboardCheck, available: true },
   { label: "Progress", href: "/progress", icon: ChartNoAxesCombined, available: true },
   { label: "Achievements", href: "/achievements", icon: Award, available: true },
-  { label: "Classes", href: "/classes", icon: Users, available: false },
+  { label: "Classes", href: "/classes", icon: Users, available: true },
 ];
 
 export function Sidebar() {
