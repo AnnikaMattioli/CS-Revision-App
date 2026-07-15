@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { createClient } from "@/lib/supabase/client";
 import { signInSchema, signUpSchema, type SignUpValues } from "@/lib/validation/auth";
@@ -15,10 +15,8 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string>();
-  const [ready, setReady] = useState(false);
   const schema = isSignUp ? signUpSchema : signInSchema;
   const demo = !hasSupabaseConfig();
-  useEffect(() => { const frame = requestAnimationFrame(() => setReady(true)); return () => cancelAnimationFrame(frame); }, []);
   const form = useForm<SignUpValues>({
     resolver: zodResolver(schema) as unknown as Resolver<SignUpValues>,
     defaultValues: { email: "", password: "", displayName: "" },
@@ -70,7 +68,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="mt-7 space-y-5" noValidate>
-      {demo && <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm leading-6 text-violet-950 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-100"><p className="font-black">Demo mode is ready</p><p>No Supabase account is needed on this computer. Continue instantly, or enter sample details to test the form.</p><button type="button" disabled={!ready} onClick={() => enterDemo()} className="mt-3 min-h-11 w-full rounded-xl bg-[var(--violet)] px-4 font-black text-white disabled:opacity-60">Continue with demo account</button></div>}
+      {demo && <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm leading-6 text-violet-950 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-100"><p className="font-black">Demo mode is ready</p><p>No Supabase account is needed on this computer. Continue instantly, or enter sample details to test the form.</p><button type="button" onClick={() => enterDemo()} className="mt-3 min-h-11 w-full rounded-xl bg-[var(--violet)] px-4 font-black text-white disabled:opacity-60">Continue with demo account</button></div>}
       {isSignUp && (
         <label className="block text-sm font-extrabold">Your name
           <input autoComplete="name" className={inputClass} placeholder="Alex" {...form.register("displayName")} aria-invalid={Boolean(form.formState.errors.displayName)} />
@@ -90,7 +88,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       </label>
       {!isSignUp && <div className="text-right"><Link href="/forgot-password" className="text-sm font-extrabold text-[var(--violet)] hover:underline">Forgot password?</Link></div>}
       {formError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{formError}</p>}
-      <button type="submit" disabled={!ready || form.formState.isSubmitting} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] px-5 font-black text-white shadow-lg shadow-violet-500/20 transition hover:bg-[var(--violet-dark)] disabled:cursor-wait disabled:opacity-70">
+      <button type="submit" disabled={form.formState.isSubmitting} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] px-5 font-black text-white shadow-lg shadow-violet-500/20 transition hover:bg-[var(--violet-dark)] disabled:cursor-wait disabled:opacity-70">
         {form.formState.isSubmitting && <LoaderCircle className="animate-spin" size={18} />}{isSignUp ? "Create my account" : "Sign in"}
       </button>
       <p className="text-center text-sm text-muted">{isSignUp ? "Already revising with us?" : "New to Bytewise?"} <Link href={isSignUp ? "/sign-in" : "/sign-up"} className="font-black text-[var(--violet)] hover:underline">{isSignUp ? "Sign in" : "Create an account"}</Link></p>
