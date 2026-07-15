@@ -21,6 +21,8 @@ Daily aggregates in `study_activity_days` support streaks and activity summaries
 
 The `handle_new_user` trigger creates a profile and student role after Supabase Auth registration. It never accepts a requested role from signup metadata.
 
+Deleting a verified Supabase Auth user cascades through the profile and user-owned learning tables. The application exposes this only through a rate-limited server route that verifies the current session and explicit `DELETE` confirmation.
+
 ## Trusted practice writes
 
 Phase 3 creates owned practice sets and attempts through Row Level Security. Draft answers are autosaved with the signed-in student client. Submission rechecks the user, open-attempt status and exact set membership, then a server-only Supabase secret stores marking results and closes the attempt. Correct answers and rules never enter the pre-submission payload.
@@ -29,4 +31,4 @@ Exam papers extend practice sets with navigation, release and grade-boundary con
 
 ## Important future work
 
-Before production deployment, final answer writes and attempt closure should move into one transactional, security-definer database function with a fixed `search_path`, and practice endpoints need deployment-edge rate limits. Teacher progress policies should expose only class members and the minimum required profile fields. Account deletion should use a verified server action that deletes the Auth user, allowing cascading personal-data deletion.
+For additional defence in depth at larger scale, final answer writes and attempt closure should move into one transactional, security-definer database function with a fixed `search_path`. Production should combine the included application limits with deployment-edge distributed rate limits and periodically re-run negative RLS tests after schema changes.

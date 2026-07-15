@@ -1,6 +1,7 @@
 import { ArrowRight, Brain, ChartNoAxesCombined, CheckCircle2, Layers3, Sparkles } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/header";
 import { ButtonLink } from "@/components/ui/button";
+import { MarketingFooter } from "@/components/marketing/footer";
 
 const features = [
   { icon: Layers3, title: "Learn it clearly", copy: "Focused notes organise every topic into manageable steps.", colour: "var(--blue)" },
@@ -8,11 +9,13 @@ const features = [
   { icon: ChartNoAxesCombined, title: "See your progress", copy: "Friendly insights show where to focus your next session.", colour: "var(--teal)" },
 ];
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ account?: string }> }) {
+  const accountDeleted = (await searchParams).account === "deleted";
   return (
     <div className="dot-grid min-h-screen overflow-hidden">
       <MarketingHeader />
-      <main id="main-content">
+      {accountDeleted ? <p role="status" className="mx-auto mt-3 max-w-7xl rounded-xl bg-emerald-100 px-5 py-3 font-bold text-emerald-900">Your account and personal learning data were deleted.</p> : null}
+      <main id="main-content" tabIndex={-1}>
         <section className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 pb-20 pt-14 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:pb-28 lg:pt-20">
           <div>
             <span className="mb-6 inline-flex items-center gap-2 rounded-full border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold text-[var(--violet)] shadow-sm">
@@ -70,6 +73,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
+      <MarketingFooter />
     </div>
   );
 }

@@ -3,9 +3,11 @@ import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/env";
 import { questionBank } from "@/lib/practice/question-bank";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const schema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.literal("GCSE"), examBoard: z.literal("OCR"), topic: z.string().max(80), questionCount: z.number().int().min(1).max(10), difficulty: z.string().max(30), timeLimitMinutes: z.number().int().min(1).max(180), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) });
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "exam-start", { limit: 20, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid exam configuration." }, { status: 400 }); const config = parsed.data;
   let ordered = questionBank.map((question) => ({ id: question.id, topic: question.topicSlug, difficulty: question.difficulty }));
   if (config.difficulty !== "mixed") ordered = [...ordered].sort((a, b) => Number(b.difficulty === config.difficulty) - Number(a.difficulty === config.difficulty));

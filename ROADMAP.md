@@ -28,9 +28,9 @@ Teacher dashboard, classes, one-time secure joining codes, assignment creation a
 
 Audited content management, protected question editing, validated CSV/JSON preview and transactional imports, reports, anonymised performance, server-enforced role management and read-only audit history.
 
-## Phase 8 — Quality and deployment
+## Phase 8 — Quality and deployment (completed)
 
-Security and accessibility audits, responsive/browser coverage, performance work, complete automated workflows and Vercel deployment guidance.
+Security/privacy headers and rate limits, verified account deletion, accessibility and responsive hardening, resilient loading/error states, cross-browser CI, complete release documentation and Vercel deployment guidance.
 
 ## Technical risks
 

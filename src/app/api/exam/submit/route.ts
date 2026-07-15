@@ -6,14 +6,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { ExamConfig, ExamResult } from "@/types/exam";
 import type { PracticeResult } from "@/types/practice";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { demoAttemptAllowed, hasDemoAttemptPrefix } from "@/lib/security/boundaries";
 
 const databaseId = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i); const answer = z.union([z.string(), z.array(z.string()), z.record(z.string(), z.string()), z.null()]);
 const configSchema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.string(), examBoard: z.string(), topic: z.string(), questionCount: z.number(), difficulty: z.string(), timeLimitMinutes: z.number(), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) });
 const schema = z.object({ attemptId: z.string().min(1).max(100), questionIds: z.array(databaseId).min(1).max(10), answers: z.record(z.string(), answer), durationSeconds: z.number().int().min(0).max(86400), autoSubmitted: z.boolean(), questionTimings: z.record(z.string(), z.number().int().min(0).max(86400)), resultsRelease: z.enum(["immediate", "later"]), config: configSchema });
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "exam-submit", { limit: 20, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid exam submission." }, { status: 400 });
-  const data = parsed.data; const demo = data.attemptId.startsWith("exam-demo-"); let release = data.resultsRelease; let trustedConfig: ExamConfig = data.config; let autoSubmitted = data.autoSubmitted;
+  const data = parsed.data; const configured = hasSupabaseConfig(); const demo = demoAttemptAllowed(data.attemptId, configured); if(hasDemoAttemptPrefix(data.attemptId)&&!demo)return NextResponse.json({error:"Demo attempts are disabled in this deployment."},{status:403}); let release = data.resultsRelease; let trustedConfig: ExamConfig = data.config; let autoSubmitted = data.autoSubmitted;
   if (!demo && hasSupabaseConfig()) {
     const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const { data: attempt } = await supabase.from("attempts").select("practice_set_id,deadline_at").eq("id", data.attemptId).eq("user_id", user.id).eq("status", "in_progress").maybeSingle(); if (!attempt) return NextResponse.json({ error: "Exam is no longer open." }, { status: 409 });

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { classCodeHint, generateClassCode, hashClassCode } from "@/lib/teacher/class-codes";
 import { requireTeacher } from "@/lib/teacher/auth";
+import { rateLimit } from "@/lib/security/rate-limit";
 
-export async function POST(_: Request, { params }: { params: Promise<{ classId: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ classId: string }> }) {
+  const limited = rateLimit(request, "class-code-rotate", { limit: 20, windowMs: 60 * 60_000 }); if (limited) return limited;
   const { classId } = await params; const actor = await requireTeacher();
   if (!actor) return NextResponse.json({ error: "A teacher account is required." }, { status: 403 });
   const code = actor.demo ? "FRESH7" : generateClassCode();

@@ -6,14 +6,20 @@ import { calculateMastery } from "@/lib/progress/mastery";
 import type { PracticeAnswer, PracticeResult } from "@/types/practice";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { hasSupabaseConfig } from "@/lib/env";
+import { demoAttemptAllowed, hasDemoAttemptPrefix } from "@/lib/security/boundaries";
 
 const answerSchema = z.union([z.string(), z.array(z.string()), z.record(z.string(), z.string()), z.null()]);
 const databaseId = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 const submissionSchema = z.object({ attemptId: z.string().min(1).max(100), questionIds: z.array(databaseId).min(1).max(10), answers: z.record(z.string(), answerSchema), durationSeconds: z.number().int().min(0).max(86400) });
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "practice-submit", { limit: 40, windowMs: 60_000 }); if (limited) return limited;
   const parsed = submissionSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
+  const configured = hasSupabaseConfig();
+  if (hasDemoAttemptPrefix(parsed.data.attemptId) && !demoAttemptAllowed(parsed.data.attemptId, configured)) return NextResponse.json({ error: "Demo attempts are disabled in this deployment." }, { status: 403 });
   const selected = parsed.data.questionIds.map((id) => questionBank.find((question) => question.id === id)).filter((question) => question !== undefined);
   if (selected.length !== parsed.data.questionIds.length) return NextResponse.json({ error: "Question set is invalid." }, { status: 400 });
   const results = selected.map((question) => markQuestion(question, (parsed.data.answers[question.id] ?? null) as PracticeAnswer));
@@ -27,7 +33,7 @@ export async function POST(request: Request) {
     return { topicSlug, topicTitle: items[0].question.topicTitle, previousScore, score: calculation.score, label: calculation.label, change: calculation.score - previousScore };
   });
   const response: PracticeResult = { attemptId: parsed.data.attemptId, submittedAt: new Date().toISOString(), durationSeconds: parsed.data.durationSeconds, score, availableMarks, percentage: availableMarks ? Math.round((score / availableMarks) * 100) : 0, results, masteryUpdates };
-  if (!parsed.data.attemptId.startsWith("demo-") && !parsed.data.attemptId.startsWith("exam-demo-") && !parsed.data.attemptId.startsWith("retry-")) {
+  if (!demoAttemptAllowed(parsed.data.attemptId, configured)) {
     try {
       const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
       const { data: attempt } = await supabase.from("attempts").select("id,practice_set_id").eq("id", parsed.data.attemptId).eq("user_id", user.id).eq("status", "in_progress").maybeSingle(); if (!attempt) return NextResponse.json({ error: "Attempt is no longer open." }, { status: 409 });

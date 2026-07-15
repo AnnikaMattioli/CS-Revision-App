@@ -10,7 +10,8 @@
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
     "test": "node ./node_modules/vitest/vitest.mjs run",
     "test:watch": "node ./node_modules/vitest/vitest.mjs",
-    "test:e2e": "node ./node_modules/@playwright/test/cli.js test"
+    "test:e2e": "node ./node_modules/@playwright/test/cli.js test",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

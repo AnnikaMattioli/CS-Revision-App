@@ -23,6 +23,6 @@ test("validated JSON import previews and confirms transaction",async({page})=>{
 
 test("reports, roles and audit controls remain server mediated",async({page})=>{
   await page.goto("/admin/reports"); const card=page.locator("article").filter({hasText:"A correct explanation using the phrase storage drive"}); const status=card.getByLabel("Status for report report-1"); await status.selectOption("resolved"); await card.getByLabel("Internal notes for report report-1").fill("Answer variant added and marking retested."); await card.getByRole("button",{name:"Save review"}).click(); await expect(status).toHaveValue("resolved");
-  await page.goto("/admin/roles"); await page.getByLabel("Role for Alex Admin").selectOption("student"); await expect(page.getByText("You cannot remove your own administrator access.")).toBeVisible(); await page.getByLabel("Role for Taylor Teacher").selectOption("admin"); await expect(page.getByText("Taylor Teacher is now a admin.")).toBeVisible();
+  await page.goto("/admin/roles"); await page.getByLabel("Role for Alex Admin").selectOption("student"); await expect(page.getByText("You cannot remove your own administrator access.")).toBeVisible(); await page.getByLabel("Role for Taylor Teacher").selectOption("admin"); await expect(page.getByText("Taylor Teacher is now an administrator.")).toBeVisible();
   await page.goto("/admin/audit"); await expect(page.getByRole("heading",{level:1,name:"Important changes, preserved"})).toBeVisible(); await expect(page.getByText("question published")).toBeVisible();
 });

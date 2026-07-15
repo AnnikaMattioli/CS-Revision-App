@@ -41,7 +41,7 @@
 }
 
 * { border-color: var(--border); }
-html { scroll-behaviour: smooth; }
+html { scroll-behavior: smooth; }
 body {
   background: var(--background);
   color: var(--foreground);
@@ -49,8 +49,10 @@ body {
   font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
 }
 
-button, a, input, select { outline-offset: 3px; }
+button, a, input, select, textarea, [tabindex] { outline-offset: 3px; }
 :focus-visible { outline: 3px solid color-mix(in srgb, var(--violet) 65%, transparent); }
+dialog::backdrop { background: rgb(15 23 42 / 65%); }
+button, [role="button"] { touch-action: manipulation; }
 
 .card {
   background: var(--surface);
@@ -87,4 +89,9 @@ button, a, input, select { outline-offset: 3px; }
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@media (forced-colors: active) {
+  :focus-visible { outline: 3px solid CanvasText; }
+  .gradient-text { background: none; color: CanvasText; }
 }

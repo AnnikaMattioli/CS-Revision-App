@@ -4,9 +4,11 @@ import { hasSupabaseConfig } from "@/lib/env";
 import { questionBank } from "@/lib/practice/question-bank";
 import { selectAdaptiveQuestions, type QuestionHistory } from "@/lib/progress/adaptive";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const schema = z.object({ topic: z.string().max(80), difficulty: z.string().max(40), timer: z.string().max(20), mode: z.enum(["adaptive", "weak", "unseen", "all"]).default("adaptive") });
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "practice-start", { limit: 60, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid settings." }, { status: 400 });
   const candidates = questionBank.map(({ id, topicSlug, difficulty }) => ({ id, topicSlug, difficulty }));
   const demoMastery = { "systems-architecture": 72, "memory-and-storage": 54, "networks-and-protocols": 34 };

@@ -21,6 +21,9 @@ test("practice answers survive refresh and receive secure feedback", async ({ pa
   await expect(page.getByRole("heading", { level: 1 })).toContainText("5%");
   await expect(page.getByRole("heading", { name: "Question feedback" })).toBeVisible();
   await expect(page.getByText("The ALU carries out calculations and logical operations.", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Retry incorrect" }).click();
+  await expect(page).toHaveURL(/\/practise\/session\/retry-/);
+  await expect(page.getByText("Question 1 of 9")).toBeVisible();
 });
 
 test("completed practice appears in attempt history", async ({ page }) => {

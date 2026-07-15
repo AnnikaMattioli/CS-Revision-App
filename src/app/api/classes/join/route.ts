@@ -4,9 +4,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { hashClassCode, normalizeClassCode } from "@/lib/teacher/class-codes";
 import { joinClassSchema } from "@/lib/teacher/validation";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 const genericError = "That joining code is invalid or no longer active.";
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "class-join", { limit: 12, windowMs: 10 * 60_000 }); if (limited) return limited;
   const parsed = joinClassSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: genericError }, { status: 400 });
   if (!hasSupabaseConfig()) return normalizeClassCode(parsed.data.code) === "DEMO42" ? NextResponse.json({ classId: "demo-class-1", className: "Year 10 Computer Science" }) : NextResponse.json({ error: genericError }, { status: 404 });
