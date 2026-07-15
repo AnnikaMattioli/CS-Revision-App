@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { createClient } from "@/lib/supabase/client";
 import { signInSchema, signUpSchema, type SignUpValues } from "@/lib/validation/auth";
+import { hasSupabaseConfig } from "@/lib/env";
 
 export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const isSignUp = mode === "sign-up";
@@ -15,6 +16,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string>();
   const schema = isSignUp ? signUpSchema : signInSchema;
+  const demo = !hasSupabaseConfig();
   const form = useForm<SignUpValues>({
     resolver: zodResolver(schema) as unknown as Resolver<SignUpValues>,
     defaultValues: { email: "", password: "", displayName: "" },
@@ -22,6 +24,10 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
 
   async function onSubmit(values: SignUpValues) {
     setFormError(undefined);
+    if (demo) {
+      enterDemo(values.displayName || "Demo Student");
+      return;
+    }
     try {
       const supabase = createClient();
       if (isSignUp) {
@@ -50,10 +56,17 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     }
   }
 
+  function enterDemo(displayName = "Demo Student") {
+    window.localStorage.setItem("bytewise:demo-user", JSON.stringify({ displayName, mode: "demo" }));
+    router.push(isSignUp ? "/onboarding" : "/dashboard");
+    router.refresh();
+  }
+
   const inputClass = "mt-2 h-12 w-full rounded-xl border bg-[var(--surface)] px-4 text-base font-semibold placeholder:text-[var(--muted)]/70";
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="mt-7 space-y-5" noValidate>
+      {demo && <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm leading-6 text-violet-950 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-100"><p className="font-black">Demo mode is ready</p><p>No Supabase account is needed on this computer. Continue instantly, or enter sample details to test the form.</p><button type="button" onClick={() => enterDemo()} className="mt-3 min-h-11 w-full rounded-xl bg-[var(--violet)] px-4 font-black text-white">Continue with demo account</button></div>}
       {isSignUp && (
         <label className="block text-sm font-extrabold">Your name
           <input autoComplete="name" className={inputClass} placeholder="Alex" {...form.register("displayName")} aria-invalid={Boolean(form.formState.errors.displayName)} />

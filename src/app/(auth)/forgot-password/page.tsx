@@ -7,12 +7,14 @@ import { useState } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { resetPasswordSchema } from "@/lib/validation/auth";
 import { createClient } from "@/lib/supabase/client";
+import { hasSupabaseConfig } from "@/lib/env";
 
 type Values = z.infer<typeof resetPasswordSchema>;
 export default function ForgotPasswordPage() {
   const [message, setMessage] = useState<string>();
   const form = useForm<Values>({ resolver: zodResolver(resetPasswordSchema), defaultValues: { email: "" } });
   async function submit(values: Values) {
+    if (!hasSupabaseConfig()) { setMessage("Demo mode has no password or email account to reset. Return to sign in and choose “Continue with demo account”."); return; }
     try {
       const { error } = await createClient().auth.resetPasswordForEmail(values.email, { redirectTo: `${window.location.origin}/auth/callback?next=/update-password` });
       if (error) throw error;

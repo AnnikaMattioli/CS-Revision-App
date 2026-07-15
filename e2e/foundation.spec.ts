@@ -14,6 +14,14 @@ test("demo dashboard is responsive and labelled", async ({ page }) => {
   await expect(page.getByText(/Demo mode/)).toBeVisible();
 });
 
+test("demo users can sign in without Supabase credentials", async ({ page }) => {
+  await page.goto("/sign-in");
+  await expect(page.getByText("Demo mode is ready")).toBeVisible();
+  await page.getByRole("button", { name: "Continue with demo account" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Ready to make progress");
+});
+
 test("student can open a topic and complete a lesson", async ({ page }) => {
   await page.goto("/learn/memory-and-storage/secondary-storage");
   await expect(page.getByRole("heading", { level: 1, name: "Secondary storage" })).toBeVisible();
