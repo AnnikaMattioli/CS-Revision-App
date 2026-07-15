@@ -12,6 +12,7 @@ export type Database = {
           display_name: string;
           avatar_colour: string;
           onboarding_completed: boolean;
+          onboarding_version: number;
           created_at: string;
           updated_at: string;
         };
@@ -20,6 +21,7 @@ export type Database = {
           display_name: string;
           avatar_colour?: string;
           onboarding_completed?: boolean;
+          onboarding_version?: number;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
@@ -195,6 +197,8 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      complete_onboarding: { Args: { requested_role: "student" | "teacher"; requested_course: string }; Returns: undefined };
+      join_class_by_hash: { Args: { requested_hash: string }; Returns: Array<{ class_id: string; class_name: string }> };
       teacher_class_students: { Args: { requested_class: string }; Returns: Array<{ student_id: string; display_name: string; joined_at: string }> };
       teacher_class_mastery: { Args: { requested_class: string }; Returns: Array<{ topic_id: string; average_mastery: number; secure_students: number; student_count: number }> };
       teacher_student_mastery: { Args: { requested_class: string; requested_student: string }; Returns: Array<{ topic_id: string; mastery_score: number; confidence: string; accuracy_score: number; questions_seen: number; updated_at: string }> };

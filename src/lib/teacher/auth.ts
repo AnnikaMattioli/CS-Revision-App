@@ -7,6 +7,6 @@ export async function requireTeacher() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", user.id).in("role", ["teacher", "admin"]).maybeSingle();
+  const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", user.id).in("role", ["teacher", "admin"]).limit(1).maybeSingle();
   return role ? { demo: false as const, userId: user.id, supabase } : null;
 }

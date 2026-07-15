@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { hasSupabaseConfig } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
 
-const nav = [
+const studentNav = [
   { label: "Dashboard", href: "/dashboard", icon: Home, available: true },
   { label: "Learn", href: "/learn", icon: BookOpen, available: true },
   { label: "Practise", href: "/practise", icon: Brain, available: true },
@@ -19,13 +19,24 @@ const nav = [
   { label: "Progress", href: "/progress", icon: ChartNoAxesCombined, available: true },
   { label: "Achievements", href: "/achievements", icon: Award, available: true },
   { label: "Classes", href: "/classes", icon: Users, available: true },
-  { label: "Admin", href: "/admin", icon: ShieldCheck, available: true },
 ];
 
-export function Sidebar() {
+const teacherNav = [
+  { label: "Teacher overview", href: "/teacher", icon: Home, available: true },
+  { label: "Classes & assignments", href: "/classes", icon: Users, available: true },
+];
+
+const adminNav = [
+  { label: "Teacher overview", href: "/teacher", icon: Home, available: true },
+  { label: "Classes & assignments", href: "/classes", icon: Users, available: true },
+  { label: "Administration", href: "/admin", icon: ShieldCheck, available: true },
+];
+
+export function Sidebar({ role }: { role: "student" | "teacher" | "admin" }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const nav = role === "student" ? studentNav : role === "teacher" ? teacherNav : adminNav;
 
   async function signOut() {
     if (hasSupabaseConfig()) await createClient().auth.signOut();
@@ -35,7 +46,7 @@ export function Sidebar() {
 
   const content = <>
     <div className="flex h-20 items-center justify-between px-5"><Logo /><button className="grid size-10 place-items-center rounded-xl lg:hidden" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></button></div>
-    <nav aria-label="Learning navigation" className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+    <nav aria-label={role === "student" ? "Learning navigation" : "Teaching navigation"} className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
       {nav.map(({ label, href, icon: Icon, available }) => available ? (
         <Link key={label} href={href} onClick={() => setOpen(false)} aria-current={pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`)) ? "page" : undefined} className={cn("flex min-h-11 items-center gap-3 rounded-xl px-3 font-extrabold transition", pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`)) ? "bg-violet-100 text-[var(--violet)] dark:bg-violet-500/15" : "text-muted hover:bg-[var(--surface-soft)] hover:text-[var(--foreground)]")}><Icon size={19} aria-hidden="true" />{label}</Link>
       ) : (

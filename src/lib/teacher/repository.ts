@@ -7,7 +7,7 @@ import type { ClassAssignment, ClassStudent, TeacherClass, TopicClassInsight } f
 const topicMap = new Map(demoCourse.topics.map((topic) => [topic.id, topic]));
 
 export async function getTeacherClasses(): Promise<TeacherClass[]> {
-  const actor = await requireTeacher(); if (!actor || actor.demo) return demoClasses;
+  const actor = await requireTeacher(); if (!actor) return []; if (actor.demo) return demoClasses;
   const { data: rows } = await actor.supabase.from("classes").select("id,name,course_id,join_code_hint,archived_at").eq("teacher_id", actor.userId).order("created_at", { ascending: false });
   if (!rows?.length) return [];
   const result = await Promise.all(rows.map(async (row) => {
