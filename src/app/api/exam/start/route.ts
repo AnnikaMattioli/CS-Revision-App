@@ -2,19 +2,19 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/env";
 import { questionBankForCourse } from "@/lib/practice/question-bank";
-import { selectAqaGcseFullPaper, selectOcrALevelFullPaper, selectOcrGcseFullPaper } from "@/lib/practice/full-paper";
+import { selectAqaALevelFullPaper, selectAqaGcseFullPaper, selectOcrALevelFullPaper, selectOcrGcseFullPaper } from "@/lib/practice/full-paper";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/security/rate-limit";
 
-const schema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.enum(["GCSE", "A Level"]), examBoard: z.enum(["OCR", "AQA"]), topic: z.string().max(80), paper: z.enum(["paper1", "paper2"]).optional(), questionCount: z.number().int().min(1).max(20), difficulty: z.string().max(30), timeLimitMinutes: z.number().int().min(1).max(180), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) }).refine((value) => value.qualification === "GCSE" || value.examBoard === "OCR", { message: "This A-level question bank is not published yet." });
+const schema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.enum(["GCSE", "A Level"]), examBoard: z.enum(["OCR", "AQA"]), topic: z.string().max(80), paper: z.enum(["paper1", "paper2"]).optional(), questionCount: z.number().int().min(1).max(20), difficulty: z.string().max(30), timeLimitMinutes: z.number().int().min(1).max(180), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) });
 export async function POST(request: Request) {
   const limited = rateLimit(request, "exam-start", { limit: 20, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid exam configuration." }, { status: 400 }); let config = parsed.data;
-  const courseId = config.qualification === "A Level" ? "10000000-0000-0000-0000-000000000003" : config.examBoard === "AQA" ? "10000000-0000-0000-0000-000000000002" : "10000000-0000-0000-0000-000000000001";
+  const courseId = config.qualification === "A Level" ? (config.examBoard === "AQA" ? "10000000-0000-0000-0000-000000000004" : "10000000-0000-0000-0000-000000000003") : config.examBoard === "AQA" ? "10000000-0000-0000-0000-000000000002" : "10000000-0000-0000-0000-000000000001";
   const bank = questionBankForCourse(courseId);
   if (config.kind === "full_mock") config = { ...config, paper: config.paper ?? "paper1", timeLimitMinutes: config.qualification === "A Level" ? 150 : config.examBoard === "AQA" ? (config.paper === "paper2" ? 105 : 120) : 90 };
   if (config.kind === "full_mock") {
-    const paperQuestions = config.qualification === "A Level" ? selectOcrALevelFullPaper(bank, config.paper ?? "paper1") : config.examBoard === "AQA" ? selectAqaGcseFullPaper(bank, config.paper ?? "paper1") : selectOcrGcseFullPaper(bank, config.paper ?? "paper1");
+    const paperQuestions = config.qualification === "A Level" ? (config.examBoard === "AQA" ? selectAqaALevelFullPaper(bank, config.paper ?? "paper1") : selectOcrALevelFullPaper(bank, config.paper ?? "paper1")) : config.examBoard === "AQA" ? selectAqaGcseFullPaper(bank, config.paper ?? "paper1") : selectOcrGcseFullPaper(bank, config.paper ?? "paper1");
     const questionIds = paperQuestions.map((question) => question.id);
     config = { ...config, questionCount: questionIds.length };
     return startAttempt(config, questionIds);

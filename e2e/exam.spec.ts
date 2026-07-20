@@ -90,6 +90,21 @@ test("OCR A-level full papers use the A-level bank and official timing", async (
   }
 });
 
+test("AQA A-level full papers use the 7517 bank and official structure", async ({ request }) => {
+  for (const paper of ["paper1", "paper2"] as const) {
+    const response = await request.post("/api/exam/start", { data: {
+      kind: "full_mock", qualification: "A Level", examBoard: "AQA", topic: "mixed", paper,
+      questionCount: 20, difficulty: "mixed", timeLimitMinutes: 15,
+      allowBackwards: true, warnUnanswered: true, resultsRelease: "immediate",
+    } });
+    expect(response.ok()).toBe(true);
+    const result = await response.json() as { questionIds: string[]; config: { qualification: string; examBoard: string; paper: string; timeLimitMinutes: number } };
+    expect(result.config).toMatchObject({ qualification: "A Level", examBoard: "AQA", paper, timeLimitMinutes: 150 });
+    expect(result.questionIds.length).toBeGreaterThan(20);
+    expect(result.questionIds.every((id) => id.startsWith("90000000-"))).toBe(true);
+  }
+});
+
 test("time expiry automatically submits saved answers", async ({ page }) => {
   const ids = ["60000000-0000-4000-8000-000000001001", "60000000-0000-4000-8000-000000001002"];
   await page.goto(`/exam-practice/session/exam-demo-auto?ids=${ids.join(",")}&time=0&back=1&warn=1&release=immediate&kind=mixed`);

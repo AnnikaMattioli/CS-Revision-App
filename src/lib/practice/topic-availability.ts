@@ -27,6 +27,20 @@ export const PRACTICE_TOPIC_SLUGS = new Set([
   "problem-solving-and-programming",
   "advanced-algorithms",
   "programming-project",
+  "fundamentals-of-programming",
+  "fundamentals-of-data-structures",
+  "fundamentals-of-advanced-algorithms",
+  "theory-of-computation",
+  "advanced-data-representation",
+  "fundamentals-of-computer-systems",
+  "computer-organisation-and-architecture",
+  "consequences-of-computing",
+  "communication-and-networking",
+  "fundamentals-of-databases",
+  "big-data",
+  "functional-programming",
+  "systematic-problem-solving",
+  "non-exam-assessment-project",
 ]);
 
 export function hasPracticeQuestions(topicSlug: string) {

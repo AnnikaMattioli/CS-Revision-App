@@ -3,6 +3,7 @@ import type { ProtectedQuestion, PublicQuestion } from "@/types/practice";
 import { ocrGcseQuestionBank } from "@/lib/practice/ocr-gcse-question-bank";
 import { aqaGcseQuestionBank } from "@/lib/practice/aqa-gcse-question-bank";
 import { ocrALevelQuestionBank } from "@/lib/practice/ocr-a-level-question-bank";
+import { aqaALevelQuestionBank } from "@/lib/practice/aqa-a-level-question-bank";
 
 const legacyQuestionBank: ProtectedQuestion[] = [
   {
@@ -79,11 +80,12 @@ const legacyQuestionBank: ProtectedQuestion[] = [
 
 void legacyQuestionBank;
 
-export const questionBank = [...ocrGcseQuestionBank, ...aqaGcseQuestionBank, ...ocrALevelQuestionBank];
+export const questionBank = [...ocrGcseQuestionBank, ...aqaGcseQuestionBank, ...ocrALevelQuestionBank, ...aqaALevelQuestionBank];
 
 export function questionBankForCourse(courseId: string) {
   if (courseId === "10000000-0000-0000-0000-000000000002") return aqaGcseQuestionBank;
   if (courseId === "10000000-0000-0000-0000-000000000003") return ocrALevelQuestionBank;
+  if (courseId === "10000000-0000-0000-0000-000000000004") return aqaALevelQuestionBank;
   return ocrGcseQuestionBank;
 }
 

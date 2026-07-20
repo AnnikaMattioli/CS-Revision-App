@@ -27,10 +27,10 @@ export function ExamSetup({ qualification, examBoard, topics }: { qualification:
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string>();
   const availableTopics = topics.filter((item) => item.practiceAvailable);
-  const ocrALevel = qualification === "A Level" && examBoard === "OCR";
-  const examAvailable = ((qualification === "GCSE" && ["OCR", "AQA"].includes(examBoard)) || ocrALevel) && availableTopics.length > 0;
-  const fullPaperMarks = ocrALevel ? 140 : examBoard === "AQA" ? 90 : 80;
-  const fullPaperMinutes = ocrALevel ? 150 : examBoard === "AQA" ? (paper === "paper2" ? 105 : 120) : 90;
+  const aLevel = qualification === "A Level";
+  const examAvailable = ((qualification === "GCSE" || aLevel) && ["OCR", "AQA"].includes(examBoard)) && availableTopics.length > 0;
+  const fullPaperMarks = aLevel ? (examBoard === "AQA" ? 100 : 140) : examBoard === "AQA" ? 90 : 80;
+  const fullPaperMinutes = aLevel ? 150 : examBoard === "AQA" ? (paper === "paper2" ? 105 : 120) : 90;
   const estimatedMarks = useMemo(() => Math.round(questionCount * 2), [questionCount]);
 
   async function start() {
@@ -56,7 +56,7 @@ export function ExamSetup({ qualification, examBoard, topics }: { qualification:
         <label className="text-sm font-black">Qualification<select className={selectClass} disabled><option>{qualification}</option></select></label>
         <label className="text-sm font-black">Exam board<select className={selectClass} disabled><option>{examBoard}</option></select></label>
         <label className="text-sm font-black">Topic<select className={selectClass} disabled={kind !== "topic" || !examAvailable} value={topic} onChange={(event) => setTopic(event.target.value)}><option value="mixed">Choose a topic</option>{topics.map((item) => <option key={item.slug} value={item.slug} disabled={!item.practiceAvailable}>{item.icon} {item.title}{item.practiceAvailable ? "" : " — coming soon"}</option>)}</select></label>
-        {kind === "full_mock" ? <label className="text-sm font-black">{examBoard} component<select className={selectClass} value={paper} onChange={(event) => setPaper(event.target.value as "paper1" | "paper2")}><option value="paper1">Paper 1 · {examBoard === "AQA" ? "Computational thinking and programming" : "Computer systems"}</option><option value="paper2">Paper 2 · {examBoard === "AQA" ? "Computing concepts" : "Algorithms and programming"}</option></select></label> : <label className="text-sm font-black">Questions<select className={selectClass} value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}><option value="5">5 questions</option><option value="10">10 questions</option><option value="20">20 questions</option></select></label>}
+        {kind === "full_mock" ? <label className="text-sm font-black">{examBoard} component<select className={selectClass} value={paper} onChange={(event) => setPaper(event.target.value as "paper1" | "paper2")}><option value="paper1">Paper 1 · {aLevel && examBoard === "AQA" ? "Programming and theory" : examBoard === "AQA" ? "Computational thinking and programming" : "Computer systems"}</option><option value="paper2">Paper 2 · {aLevel && examBoard === "AQA" ? "Computing concepts" : examBoard === "AQA" ? "Computing concepts" : "Algorithms and programming"}</option></select></label> : <label className="text-sm font-black">Questions<select className={selectClass} value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}><option value="5">5 questions</option><option value="10">10 questions</option><option value="20">20 questions</option></select></label>}
         <label className="text-sm font-black">Difficulty<select className={selectClass} value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option value="mixed">Mixed difficulty</option><option value="foundation">Foundation</option><option value="developing">Developing</option><option value="secure">Secure</option><option value="advanced">Advanced</option></select></label>
         <label className="text-sm font-black">Time limit<select className={selectClass} value={minutes} onChange={(event) => setMinutes(Number(event.target.value))}><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option></select></label>
       </div>

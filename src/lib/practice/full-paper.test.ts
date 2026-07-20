@@ -5,6 +5,8 @@ import { aqaGcseQuestionBank } from "./aqa-gcse-question-bank";
 import { selectAqaGcseFullPaper } from "./full-paper";
 import { ocrALevelQuestionBank } from "./ocr-a-level-question-bank";
 import { selectOcrALevelFullPaper } from "./full-paper";
+import { aqaALevelQuestionBank } from "./aqa-a-level-question-bank";
+import { selectAqaALevelFullPaper } from "./full-paper";
 
 describe("OCR GCSE full papers", () => {
   it.each(["paper1", "paper2"] as const)("builds an 80-mark %s with every component topic", (paper) => {
@@ -29,5 +31,14 @@ describe("OCR A-level full papers", () => {
     expect(questions.reduce((total, question) => total + question.marks, 0)).toBe(140);
     expect(new Set(questions.map((question) => question.topicSlug)).size).toBe(paper === "paper1" ? 5 : 3);
     expect(questions.every((question) => question.topicSlug !== "programming-project")).toBe(true);
+  });
+});
+
+describe("AQA A-level full papers", () => {
+  it.each(["paper1", "paper2"] as const)("builds a 100-mark %s with every assessed topic", (paper) => {
+    const questions = selectAqaALevelFullPaper(aqaALevelQuestionBank, paper);
+    expect(questions.reduce((total, question) => total + question.marks, 0)).toBe(100);
+    expect(new Set(questions.map((question) => question.topicSlug)).size).toBe(paper === "paper1" ? 5 : 8);
+    expect(questions.every((question) => question.topicSlug !== "non-exam-assessment-project")).toBe(true);
   });
 });

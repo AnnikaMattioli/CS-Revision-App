@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { demoCourse } from "@/lib/content/demo-content";
 import { aqaGcseCourse } from "@/lib/content/aqa-gcse-course";
 import { ocrALevelCourse } from "@/lib/content/ocr-a-level-course";
+import { aqaALevelCourse } from "@/lib/content/aqa-a-level-course";
 import { getPracticeTopicOptions } from "./course-topics";
 
 describe("course-aligned practice topics", () => {
@@ -16,8 +17,9 @@ describe("course-aligned practice topics", () => {
 
     expect(getPracticeTopicOptions(aqaGcseCourse).every((topic) => topic.practiceAvailable)).toBe(true);
     expect(getPracticeTopicOptions(ocrALevelCourse).every((topic) => topic.practiceAvailable)).toBe(true);
+    expect(getPracticeTopicOptions(aqaALevelCourse).every((topic) => topic.practiceAvailable)).toBe(true);
 
-    const unsupportedCourse = { ...demoCourse, slug: "aqa-a-level-computer-science" };
+    const unsupportedCourse = { ...demoCourse, slug: "unsupported-computer-science" };
     expect(getPracticeTopicOptions(unsupportedCourse).every((topic) => !topic.practiceAvailable)).toBe(true);
   });
 
