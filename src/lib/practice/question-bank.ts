@@ -1,6 +1,7 @@
 import "server-only";
 import type { ProtectedQuestion, PublicQuestion } from "@/types/practice";
 import { ocrGcseQuestionBank } from "@/lib/practice/ocr-gcse-question-bank";
+import { aqaGcseQuestionBank } from "@/lib/practice/aqa-gcse-question-bank";
 
 const legacyQuestionBank: ProtectedQuestion[] = [
   {
@@ -77,7 +78,11 @@ const legacyQuestionBank: ProtectedQuestion[] = [
 
 void legacyQuestionBank;
 
-export const questionBank = ocrGcseQuestionBank;
+export const questionBank = [...ocrGcseQuestionBank, ...aqaGcseQuestionBank];
+
+export function questionBankForCourse(courseId: string) {
+  return courseId === "10000000-0000-0000-0000-000000000002" ? aqaGcseQuestionBank : ocrGcseQuestionBank;
+}
 
 export function publicQuestions(questions = questionBank): PublicQuestion[] {
   return questions.map((question) => ({ id: question.id, topicSlug: question.topicSlug, topicTitle: question.topicTitle, type: question.type, difficulty: question.difficulty, prompt: question.prompt, marks: question.marks, estimatedSeconds: question.estimatedSeconds, options: question.options, items: question.items, targets: question.targets, code: question.code, hint: question.hint, lessonHref: question.lessonHref }));

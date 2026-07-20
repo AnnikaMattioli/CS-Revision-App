@@ -9,7 +9,7 @@ export type PracticeTopicOption = {
 };
 
 export function getPracticeTopicOptions(course: CourseContent): PracticeTopicOption[] {
-  const supportsCurrentQuestionBank = course.slug === "ocr-gcse-computer-science";
+  const supportsCurrentQuestionBank = ["ocr-gcse-computer-science", "aqa-gcse-computer-science"].includes(course.slug);
   return course.topics.map((topic) => ({
     slug: topic.slug,
     title: topic.title,

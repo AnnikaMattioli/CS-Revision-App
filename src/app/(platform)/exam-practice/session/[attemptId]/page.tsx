@@ -7,9 +7,9 @@ import type { ExamConfig } from "@/types/exam";
 import type { PublicQuestion } from "@/types/practice";
 
 export const metadata: Metadata = { title: "Timed exam" };
-export default async function ExamSessionPage({ params, searchParams }: { params: Promise<{ attemptId: string }>; searchParams: Promise<{ ids?: string; time?: string; back?: string; warn?: string; release?: string; kind?: string }> }) {
+export default async function ExamSessionPage({ params, searchParams }: { params: Promise<{ attemptId: string }>; searchParams: Promise<{ ids?: string; time?: string; back?: string; warn?: string; release?: string; kind?: string; board?: string; paper?: string }> }) {
   const { attemptId } = await params; const query = await searchParams; const persistent = !attemptId.startsWith("exam-demo-"); let questions: PublicQuestion[] = publicQuestions(); let deadlineAt: string | undefined;
-  let config: ExamConfig = { kind: (query.kind as ExamConfig["kind"]) ?? "mixed", qualification: "GCSE", examBoard: "OCR", topic: "mixed", questionCount: query.ids?.split(",").length ?? 10, difficulty: "mixed", timeLimitMinutes: Number(query.time ?? 15), allowBackwards: query.back !== "0", warnUnanswered: query.warn !== "0", resultsRelease: query.release === "later" ? "later" : "immediate" };
+  let config: ExamConfig = { kind: (query.kind as ExamConfig["kind"]) ?? "mixed", qualification: "GCSE", examBoard: query.board === "AQA" ? "AQA" : "OCR", topic: "mixed", paper: query.paper === "paper2" ? "paper2" : query.paper === "paper1" ? "paper1" : undefined, questionCount: query.ids?.split(",").length ?? 10, difficulty: "mixed", timeLimitMinutes: Number(query.time ?? 15), allowBackwards: query.back !== "0", warnUnanswered: query.warn !== "0", resultsRelease: query.release === "later" ? "later" : "immediate" };
   if (persistent) {
     const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser();
     if (user) {

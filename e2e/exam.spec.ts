@@ -60,6 +60,21 @@ test("full OCR papers expose both 80-mark components", async ({ page }) => {
   await expect(page.getByText("Paper 2", { exact: true })).toBeVisible();
 });
 
+test("AQA full papers use the correct bank, marks and timings", async ({ request }) => {
+  for (const [paper, minutes] of [["paper1", 120], ["paper2", 105]] as const) {
+    const response = await request.post("/api/exam/start", { data: {
+      kind: "full_mock", qualification: "GCSE", examBoard: "AQA", topic: "mixed", paper,
+      questionCount: 20, difficulty: "mixed", timeLimitMinutes: 15,
+      allowBackwards: true, warnUnanswered: true, resultsRelease: "immediate",
+    } });
+    expect(response.ok()).toBe(true);
+    const result = await response.json() as { questionIds: string[]; config: { examBoard: string; paper: string; timeLimitMinutes: number } };
+    expect(result.config).toMatchObject({ examBoard: "AQA", paper, timeLimitMinutes: minutes });
+    expect(result.questionIds.length).toBeGreaterThan(20);
+    expect(result.questionIds.every((id) => id.startsWith("70000000-"))).toBe(true);
+  }
+});
+
 test("time expiry automatically submits saved answers", async ({ page }) => {
   const ids = ["60000000-0000-4000-8000-000000001001", "60000000-0000-4000-8000-000000001002"];
   await page.goto(`/exam-practice/session/exam-demo-auto?ids=${ids.join(",")}&time=0&back=1&warn=1&release=immediate&kind=mixed`);

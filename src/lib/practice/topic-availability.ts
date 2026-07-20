@@ -10,6 +10,14 @@ export const PRACTICE_TOPIC_SLUGS = new Set([
   "robust-programs",
   "boolean-logic",
   "languages-and-ides",
+  "fundamentals-of-algorithms",
+  "programming",
+  "data-representation",
+  "computer-systems",
+  "computer-networks",
+  "cyber-security",
+  "relational-databases-and-sql",
+  "ethical-legal-environmental-impacts",
 ]);
 
 export function hasPracticeQuestions(topicSlug: string) {

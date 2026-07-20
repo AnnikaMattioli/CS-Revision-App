@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { demoCourse } from "@/lib/content/demo-content";
+import { aqaGcseCourse } from "@/lib/content/aqa-gcse-course";
 import { getPracticeTopicOptions } from "./course-topics";
 
 describe("course-aligned practice topics", () => {
@@ -12,8 +13,10 @@ describe("course-aligned practice topics", () => {
     const options = getPracticeTopicOptions(demoCourse);
     expect(options.every((topic) => topic.practiceAvailable)).toBe(true);
 
-    const aqaCourse = { ...demoCourse, slug: "aqa-gcse-computer-science" };
-    expect(getPracticeTopicOptions(aqaCourse).every((topic) => !topic.practiceAvailable)).toBe(true);
+    expect(getPracticeTopicOptions(aqaGcseCourse).every((topic) => topic.practiceAvailable)).toBe(true);
+
+    const unsupportedCourse = { ...demoCourse, slug: "ocr-a-level-computer-science" };
+    expect(getPracticeTopicOptions(unsupportedCourse).every((topic) => !topic.practiceAvailable)).toBe(true);
   });
 
   it("preserves the labels and icons shown by Learn", () => {

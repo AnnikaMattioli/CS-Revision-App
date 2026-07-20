@@ -4,6 +4,15 @@ import { pathToFileURL } from "node:url";
 import ts from "typescript";
 import { createClient } from "@supabase/supabase-js";
 
+const courseKey = process.argv[2] === "aqa" ? "aqa" : "ocr";
+const syncConfig = courseKey === "aqa" ? {
+  source: "src/data/aqa-gcse.ts", exportName: "aqaGcseBlueprints", courseId: "10000000-0000-0000-0000-000000000002",
+  subtopicGroup: 22000000, lessonGroup: 31000000, sectionGroup: 35000000, flashcardGroup: 41000000, solutionGroup: 51000000, questionGroup: 70000000, ruleGroup: 71000000,
+} : {
+  source: "src/data/ocr-gcse.ts", exportName: "ocrGcseBlueprints", courseId: "10000000-0000-0000-0000-000000000001",
+  subtopicGroup: 21000000, lessonGroup: 30000000, sectionGroup: 34000000, flashcardGroup: 40000000, solutionGroup: 50000000, questionGroup: 60000000, ruleGroup: 61000000,
+};
+
 function loadEnvironment() {
   for (const file of [".env.local", ".env"]) {
     if (!fs.existsSync(file)) continue;
@@ -15,19 +24,19 @@ function loadEnvironment() {
 }
 
 async function loadBlueprints() {
-  const source = fs.readFileSync("src/data/ocr-gcse.ts", "utf8");
+  const source = fs.readFileSync(syncConfig.source, "utf8");
   const javascript = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const temporary = path.join(process.env.TMPDIR ?? "/tmp", `ocr-gcse-${Date.now()}.mjs`);
+  const temporary = path.join(process.env.TMPDIR ?? "/tmp", `${courseKey}-gcse-${Date.now()}.mjs`);
   fs.writeFileSync(temporary, javascript);
-  try { return (await import(pathToFileURL(temporary).href)).ocrGcseBlueprints; }
+  try { return (await import(pathToFileURL(temporary).href))[syncConfig.exportName]; }
   finally { fs.unlinkSync(temporary); }
 }
 
 function uuid(group, topic, item) {
   return `${String(group).padStart(8, "0")}-0000-4000-8000-${String(topic * 1000 + item).padStart(12, "0")}`;
 }
-const questionId = (topic, item) => uuid(60000000, topic, item);
-const ruleId = (topic, item) => uuid(61000000, topic, item);
+const questionId = (topic, item) => uuid(syncConfig.questionGroup, topic, item);
+const ruleId = (topic, item) => uuid(syncConfig.ruleGroup, topic, item);
 const difficulties = ["foundation", "developing", "secure", "advanced", "exam_challenge"];
 const databaseDifficulty = (value) => value === "foundation" ? "foundation" : ["advanced", "exam_challenge"].includes(value) ? "stretch" : "standard";
 
@@ -70,7 +79,7 @@ async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL; const secret = process.env.SUPABASE_SECRET_KEY;
   if (!url || !secret) throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY are required.");
   const supabase = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
-  const blueprints = await loadBlueprints(); const courseId = "10000000-0000-0000-0000-000000000001";
+  const blueprints = [...await loadBlueprints()].sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true })); const courseId = syncConfig.courseId;
   const sections = await checked(supabase.from("specification_sections").select("id,code").eq("course_id", courseId), "Load sections");
   const topics = await checked(supabase.from("topics").select("id,slug,specification_section_id").in("specification_section_id", sections.map((section) => section.id)), "Load topics");
   const topicBySlug = new Map(topics.map((topic) => [topic.slug, topic])); const allQuestionRows = []; const allRuleRows = [];
@@ -79,18 +88,18 @@ async function main() {
     if (!topic) throw new Error(`Missing topic ${blueprint.slug}. Apply the specification migration first.`);
     await checked(supabase.from("topics").update({ title: blueprint.title, description: blueprint.description, icon: blueprint.icon, estimated_minutes: blueprint.units.length * 12, learning_objectives: blueprint.units.map((unit) => unit.summary), status: "published" }).eq("id", topic.id), `Update ${blueprint.slug}`);
     await checked(supabase.from("subtopics").update({ status: "archived" }).eq("topic_id", topic.id).eq("slug", "topic-overview"), `Archive ${blueprint.slug} overview`);
-    const subtopicRows = blueprint.units.map((unit, unitOffset) => ({ id: uuid(21000000, topicIndex, unitOffset + 1), topic_id: topic.id, slug: unit.slug, title: unit.title, description: unit.summary, sort_order: unitOffset + 1, status: "published" }));
+    const subtopicRows = blueprint.units.map((unit, unitOffset) => ({ id: uuid(syncConfig.subtopicGroup, topicIndex, unitOffset + 1), topic_id: topic.id, slug: unit.slug, title: unit.title, description: unit.summary, sort_order: unitOffset + 1, status: "published" }));
     await checked(supabase.from("subtopics").upsert(subtopicRows, { onConflict: "topic_id,slug" }), `Upsert ${blueprint.slug} subtopics`);
     const savedSubtopics = await checked(supabase.from("subtopics").select("id,slug").eq("topic_id", topic.id).in("slug", blueprint.units.map((unit) => unit.slug)), `Reload ${blueprint.slug} subtopics`);
     const subtopics = new Map(savedSubtopics.map((item) => [item.slug, item.id]));
-    const lessonRows = blueprint.units.map((unit, unitOffset) => ({ id: uuid(30000000, topicIndex, unitOffset + 1), subtopic_id: subtopics.get(unit.slug), slug: unit.slug, title: unit.title, summary: unit.summary, estimated_minutes: 12, sort_order: unitOffset + 1, status: "published" }));
+    const lessonRows = blueprint.units.map((unit, unitOffset) => ({ id: uuid(syncConfig.lessonGroup, topicIndex, unitOffset + 1), subtopic_id: subtopics.get(unit.slug), slug: unit.slug, title: unit.title, summary: unit.summary, estimated_minutes: 12, sort_order: unitOffset + 1, status: "published" }));
     await checked(supabase.from("lessons").upsert(lessonRows, { onConflict: "subtopic_id,slug" }), `Upsert ${blueprint.slug} lessons`);
     const savedLessons = await checked(supabase.from("lessons").select("id,slug").in("subtopic_id", [...subtopics.values()]), `Reload ${blueprint.slug} lessons`); const lessons = new Map(savedLessons.map((item) => [item.slug, item.id]));
-    const sectionRows = blueprint.units.flatMap((unit, unitOffset) => unit.facts.map((item, factOffset) => ({ id: uuid(34000000, topicIndex, (unitOffset + 1) * 10 + factOffset + 1), lesson_id: lessons.get(unit.slug), heading: item.question, body: { paragraphs: [item.answer, `Use precise subject vocabulary in an exam answer. Include ${item.keywords.join(", ")} and connect each point to its effect.`], callout: factOffset === 0 ? { type: "tip", title: "Active recall", text: "Hide the explanation, answer aloud, then check every key idea." } : undefined }, sort_order: factOffset + 1 })));
+    const sectionRows = blueprint.units.flatMap((unit, unitOffset) => unit.facts.map((item, factOffset) => ({ id: uuid(syncConfig.sectionGroup, topicIndex, (unitOffset + 1) * 10 + factOffset + 1), lesson_id: lessons.get(unit.slug), heading: item.question, body: { paragraphs: [item.answer, `Use precise subject vocabulary in an exam answer. Include ${item.keywords.join(", ")} and connect each point to its effect.`], callout: factOffset === 0 ? { type: "tip", title: "Active recall", text: "Hide the explanation, answer aloud, then check every key idea." } : undefined }, sort_order: factOffset + 1 })));
     await checked(supabase.from("lesson_sections").upsert(sectionRows, { onConflict: "id" }), `Upsert ${blueprint.slug} lesson sections`);
     const facts = blueprint.units.flatMap((unit) => unit.facts.map((item) => ({ ...item, subtopicId: subtopics.get(unit.slug) })));
-    await checked(supabase.from("flashcards").upsert(facts.map((item, index) => ({ id: uuid(40000000, topicIndex, index + 1), subtopic_id: item.subtopicId, front: item.question, back: item.answer, hint: `Include: ${item.keywords.join(", ")}`, sort_order: index + 1, status: "published" })), { onConflict: "id" }), `Upsert ${blueprint.slug} flashcards`);
-    await checked(supabase.from("worked_solutions").upsert(facts.slice(0, 5).map((item, index) => ({ id: uuid(50000000, topicIndex, index + 1), subtopic_id: item.subtopicId, title: `Worked exam response ${index + 1}`, prompt: `${item.question} Explain your answer using precise technical terminology. [3 marks]`, steps: [{ title: "Decode the command", explanation: "Identify exactly what must be explained." }, { title: "Select technical facts", explanation: `Use ${item.keywords.join(", ")}.` }, { title: "Link cause and effect", explanation: "State the fact, then explain what it means or why it matters." }], final_answer: item.answer, status: "published" })), { onConflict: "id" }), `Upsert ${blueprint.slug} worked solutions`);
+    await checked(supabase.from("flashcards").upsert(facts.map((item, index) => ({ id: uuid(syncConfig.flashcardGroup, topicIndex, index + 1), subtopic_id: item.subtopicId, front: item.question, back: item.answer, hint: `Include: ${item.keywords.join(", ")}`, sort_order: index + 1, status: "published" })), { onConflict: "id" }), `Upsert ${blueprint.slug} flashcards`);
+    await checked(supabase.from("worked_solutions").upsert(facts.slice(0, 5).map((item, index) => ({ id: uuid(syncConfig.solutionGroup, topicIndex, index + 1), subtopic_id: item.subtopicId, title: `Worked exam response ${index + 1}`, prompt: `${item.question} Explain your answer using precise technical terminology. [3 marks]`, steps: [{ title: "Decode the command", explanation: "Identify exactly what must be explained." }, { title: "Select technical facts", explanation: `Use ${item.keywords.join(", ")}.` }, { title: "Link cause and effect", explanation: "State the fact, then explain what it means or why it matters." }], final_answer: item.answer, status: "published" })), { onConflict: "id" }), `Upsert ${blueprint.slug} worked solutions`);
     for (const row of questionsForTopic(blueprint, topicIndex, subtopics)) { allQuestionRows.push(row.question); allRuleRows.push(row.rule); }
     process.stdout.write(`Prepared ${blueprint.code} ${blueprint.title}\n`);
   }
