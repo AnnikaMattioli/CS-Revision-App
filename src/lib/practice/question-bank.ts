@@ -1,7 +1,8 @@
 import "server-only";
 import type { ProtectedQuestion, PublicQuestion } from "@/types/practice";
+import { ocrGcseQuestionBank } from "@/lib/practice/ocr-gcse-question-bank";
 
-export const questionBank: ProtectedQuestion[] = [
+const legacyQuestionBank: ProtectedQuestion[] = [
   {
     id: "60000000-0000-0000-0000-000000000001", topicSlug: "systems-architecture", topicTitle: "Systems architecture", type: "multiple_choice", difficulty: "foundation", marks: 1, estimatedSeconds: 45,
     prompt: "Which CPU component performs arithmetic calculations and logical comparisons?",
@@ -73,6 +74,10 @@ export const questionBank: ProtectedQuestion[] = [
     explanation: "These protocols cooperate in a network stack but solve different communication problems.", commonMistake: "TCP supports reliable delivery; IP handles addressing and routing.", lessonHref: "/learn/networks-and-protocols/packets-and-protocols",
   },
 ];
+
+void legacyQuestionBank;
+
+export const questionBank = ocrGcseQuestionBank;
 
 export function publicQuestions(questions = questionBank): PublicQuestion[] {
   return questions.map((question) => ({ id: question.id, topicSlug: question.topicSlug, topicTitle: question.topicTitle, type: question.type, difficulty: question.difficulty, prompt: question.prompt, marks: question.marks, estimatedSeconds: question.estimatedSeconds, options: question.options, items: question.items, targets: question.targets, code: question.code, hint: question.hint, lessonHref: question.lessonHref }));

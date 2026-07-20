@@ -8,15 +8,15 @@ test("timed exam autosaves, warns and shows time analysis", async ({ page }) => 
   await page.getByRole("button", { name: "Start timed test" }).click();
   await expect(page).toHaveURL(/\/exam-practice\/session\/exam-demo-/);
   await expect(page.getByText("QUESTION 1 OF 5")).toBeVisible();
-  await page.getByLabel("Arithmetic logic unit").check();
+  await page.getByLabel("The CPU processes data and executes the instructions that make programs run.").check();
   await page.reload();
-  await expect(page.getByLabel("Arithmetic logic unit")).toBeChecked();
+  await expect(page.getByLabel("The CPU processes data and executes the instructions that make programs run.")).toBeChecked();
   await page.getByRole("button", { name: "Go to question 5, unanswered" }).click();
   await page.getByRole("button", { name: "Finish exam" }).click();
   await expect(page.getByRole("dialog")).toContainText("4 unanswered questions");
   await page.getByRole("dialog").getByRole("button", { name: "Submit exam" }).click();
   await expect(page).toHaveURL(/\/exam-practice\/results\/exam-demo-/, { timeout: 15_000 });
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("14%");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("20%");
   await expect(page.getByRole("heading", { name: "Time management" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Detailed review" })).toBeVisible();
   await expect(page.getByText("Not configured")).toBeVisible();
@@ -27,7 +27,7 @@ test("exam can prevent backwards navigation", async ({ page }) => {
   const backwards = page.getByLabel("Allow backwards navigation", { exact: false });
   await backwards.uncheck();
   await expect(backwards).not.toBeChecked();
-  const ids = ["60000000-0000-0000-0000-000000000001", "60000000-0000-0000-0000-000000000002"];
+  const ids = ["60000000-0000-4000-8000-000000001001", "60000000-0000-4000-8000-000000001002"];
   await page.goto(`/exam-practice/session/exam-demo-forward?ids=${ids.join(",")}&time=5&back=0&warn=1&release=immediate&kind=mixed`);
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByText("QUESTION 2 OF 2")).toBeVisible();
@@ -49,8 +49,19 @@ test("delayed exam results do not expose mark-scheme content", async ({ page }) 
   await expect(page.getByText("CORRECT / MODEL ANSWER")).toHaveCount(0);
 });
 
+test("full OCR papers expose both 80-mark components", async ({ page }) => {
+  await page.goto("/exam-practice");
+  await page.getByText("Full exam paper", { exact: true }).click();
+  await expect(page.getByText("80 available marks")).toBeVisible();
+  await expect(page.getByText("90 minute limit")).toBeVisible();
+  const component = page.getByLabel("OCR component");
+  await expect(component).toHaveValue("paper1");
+  await component.selectOption("paper2");
+  await expect(page.getByText("Paper 2", { exact: true })).toBeVisible();
+});
+
 test("time expiry automatically submits saved answers", async ({ page }) => {
-  const ids = ["60000000-0000-0000-0000-000000000001", "60000000-0000-0000-0000-000000000002"];
+  const ids = ["60000000-0000-4000-8000-000000001001", "60000000-0000-4000-8000-000000001002"];
   await page.goto(`/exam-practice/session/exam-demo-auto?ids=${ids.join(",")}&time=0&back=1&warn=1&release=immediate&kind=mixed`);
   await expect(page).toHaveURL(/\/exam-practice\/results\/exam-demo-auto/, { timeout: 15_000 });
   await expect(page.getByText("Time expired, so your saved answers were submitted automatically.")).toBeVisible();

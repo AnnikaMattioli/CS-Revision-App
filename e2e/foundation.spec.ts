@@ -25,9 +25,11 @@ test("demo users can sign in without Supabase credentials", async ({ page }) => 
 test("a new local profile uses its own name and starts at zero", async ({ page }) => {
   await page.goto("/sign-up");
   await page.waitForLoadState("networkidle");
-  await page.getByLabel("Your name").fill("Jamie");
   await page.getByLabel("Email address").fill("jamie@example.com");
   await page.locator('input[name="password"]').fill("starting-fresh");
+  const name = page.getByLabel("Your name");
+  await name.fill("Jamie");
+  await expect(name).toHaveValue("Jamie");
   await page.getByRole("button", { name: "Create my account" }).click();
   await expect(page).toHaveURL(/\/onboarding/);
   await page.goto("/dashboard");
@@ -48,11 +50,11 @@ test("student can open a topic and complete a lesson", async ({ page }) => {
 test("flashcards and worked solutions reveal feedback", async ({ page }) => {
   await page.goto("/flashcards?topic=systems-architecture");
   await page.getByRole("button", { name: "Showing question. Flip to reveal answer." }).click();
-  await expect(page.getByText("It coordinates CPU operations, decodes instructions and sends control signals.")).toBeVisible();
+  await expect(page.getByText("The CPU processes data and executes the instructions that make programs run.")).toBeVisible();
   await page.getByRole("button", { name: /Good/ }).click();
-  await expect(page.getByText("Card 2 of 3")).toBeVisible();
+  await expect(page.getByText("Card 2 of 20")).toBeVisible();
 
-  await page.goto("/worked-solutions/comparing-cpu-performance");
+  await page.goto("/worked-solutions/systems-architecture-worked-1");
   await page.getByRole("button", { name: "Reveal model answer" }).click();
   await expect(page.getByRole("heading", { name: "Model answer" })).toBeVisible();
 });

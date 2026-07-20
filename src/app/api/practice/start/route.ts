@@ -11,10 +11,11 @@ export async function POST(request: Request) {
   const limited = rateLimit(request, "practice-start", { limit: 60, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid settings." }, { status: 400 });
   const candidates = questionBank.map(({ id, topicSlug, difficulty }) => ({ id, topicSlug, difficulty }));
-  const demoMastery = { "systems-architecture": 0, "memory-and-storage": 0, "networks-and-protocols": 0 };
+  const demoMastery = Object.fromEntries([...new Set(candidates.map((candidate) => candidate.topicSlug))].map((slug) => [slug, 0]));
   const select = (mastery: Record<string, number>, history: QuestionHistory[] = []) => {
-    const chosen = selectAdaptiveQuestions({ candidates, topicMastery: mastery, history, count: 10, currentTopic: parsed.data.topic === "mixed" ? undefined : parsed.data.topic });
-    let ordered: Array<{ id: string; topicSlug: string; difficulty: string }> = parsed.data.mode === "all" ? candidates.slice(0, 10) : parsed.data.mode === "unseen" ? [...chosen].sort((a, b) => (history.find((item) => item.questionId === a.id)?.seenCount ?? 0) - (history.find((item) => item.questionId === b.id)?.seenCount ?? 0)) : chosen;
+    const scopedCandidates = parsed.data.topic === "mixed" ? candidates : candidates.filter((candidate) => candidate.topicSlug === parsed.data.topic);
+    const chosen = selectAdaptiveQuestions({ candidates: scopedCandidates, topicMastery: mastery, history, count: 10, currentTopic: parsed.data.topic === "mixed" ? undefined : parsed.data.topic });
+    let ordered: Array<{ id: string; topicSlug: string; difficulty: string }> = parsed.data.mode === "all" ? scopedCandidates.slice(0, 10) : parsed.data.mode === "unseen" ? [...chosen].sort((a, b) => (history.find((item) => item.questionId === a.id)?.seenCount ?? 0) - (history.find((item) => item.questionId === b.id)?.seenCount ?? 0)) : chosen;
     if (parsed.data.difficulty !== "mixed") ordered = [...ordered].sort((a, b) => Number(b.difficulty === parsed.data.difficulty) - Number(a.difficulty === parsed.data.difficulty));
     if (parsed.data.topic !== "mixed") ordered = [...ordered].sort((a, b) => Number(b.topicSlug === parsed.data.topic) - Number(a.topicSlug === parsed.data.topic));
     return ordered.map((item) => item.id);
@@ -23,7 +24,9 @@ export async function POST(request: Request) {
   const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   const { data: enrolment } = await supabase.from("user_course_enrolments").select("course_id").eq("user_id", user.id).eq("is_active", true).maybeSingle(); const courseId = enrolment?.course_id ?? "10000000-0000-0000-0000-000000000001";
   const { data: masteryRows } = await supabase.from("topic_mastery").select("topic_id,mastery_score").eq("user_id", user.id);
-  const topicById: Record<string, string> = { "20000000-0000-0000-0000-000000000001": "systems-architecture", "20000000-0000-0000-0000-000000000002": "memory-and-storage", "20000000-0000-0000-0000-000000000003": "networks-and-protocols" };
+  const { data: sections } = await supabase.from("specification_sections").select("id").eq("course_id", courseId);
+  const { data: topicRows } = sections?.length ? await supabase.from("topics").select("id,slug").in("specification_section_id", sections.map((section) => section.id)) : { data: [] };
+  const topicById: Record<string, string> = Object.fromEntries((topicRows ?? []).map((topic) => [topic.id, topic.slug]));
   const mastery = Object.fromEntries((masteryRows ?? []).map((row) => [topicById[row.topic_id], Number(row.mastery_score)]).filter(([slug]) => Boolean(slug)));
   const { data: attempts } = await supabase.from("attempts").select("id").eq("user_id", user.id).order("started_at", { ascending: false }).limit(20);
   const attemptIds = (attempts ?? []).map((item) => item.id);

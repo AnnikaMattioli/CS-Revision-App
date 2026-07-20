@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { allWorkedSolutions, demoCourse, findLesson, findTopic } from "./demo-content";
 
-describe("representative course content", () => {
-  it("contains a complete topic activity path", () => {
-    expect(demoCourse.topics.length).toBeGreaterThanOrEqual(3);
+describe("complete OCR GCSE course content", () => {
+  it("contains every topic and a complete activity path", () => {
+    expect(demoCourse.topics).toHaveLength(11);
     for (const topic of demoCourse.topics) {
-      expect(topic.lessons.length).toBeGreaterThan(0);
-      expect(topic.flashcards.length).toBeGreaterThan(0);
-      expect(topic.workedSolutions.length).toBeGreaterThan(0);
-      expect(topic.learningObjectives.length).toBeGreaterThanOrEqual(3);
+      expect(topic.lessons.length).toBeGreaterThanOrEqual(4);
+      expect(topic.flashcards.length).toBeGreaterThanOrEqual(20);
+      expect(topic.workedSolutions.length).toBeGreaterThanOrEqual(5);
+      expect(topic.learningObjectives.length).toBeGreaterThanOrEqual(4);
+      expect(topic.lessons.every((lesson) => lesson.sections.length >= 5)).toBe(true);
     }
   });
 
@@ -23,7 +24,7 @@ describe("representative course content", () => {
 
   it("finds topics, lessons and worked solutions", () => {
     expect(findTopic("memory-and-storage")?.title).toBe("Memory and storage");
-    expect(findLesson("memory-and-storage", "secondary-storage")?.estimatedMinutes).toBe(13);
-    expect(allWorkedSolutions()).toHaveLength(3);
+    expect(findLesson("memory-and-storage", "secondary-storage")?.estimatedMinutes).toBe(12);
+    expect(allWorkedSolutions()).toHaveLength(55);
   });
 });

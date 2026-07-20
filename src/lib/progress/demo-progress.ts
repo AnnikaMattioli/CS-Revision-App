@@ -1,12 +1,13 @@
 import type { PracticeResult } from "@/types/practice";
 import type { ProgressSnapshot, TopicMasteryInsight } from "@/types/progress";
+import { demoCourse } from "@/lib/content/demo-content";
 import { calculateMastery } from "./mastery";
 
-const topics: TopicMasteryInsight[] = [
-  { topicId: "20000000-0000-0000-0000-000000000001", slug: "systems-architecture", title: "Systems architecture", icon: "🧩", colour: "var(--violet)", score: 72, label: "Secure", questionsSeen: 34, accuracy: 78, trend: "up", explanation: "Strong CPU recall and improving explanations. One more secure set could move this topic towards Mastered.", lastPractised: "2026-07-13", practiceAvailable: true },
-  { topicId: "20000000-0000-0000-0000-000000000002", slug: "memory-and-storage", title: "Memory and storage", icon: "💾", colour: "var(--blue)", score: 54, label: "Developing", questionsSeen: 27, accuracy: 64, trend: "steady", explanation: "Storage choices are sound, but virtual memory and unit conversions need more consistent marks.", lastPractised: "2026-07-12", practiceAvailable: true },
-  { topicId: "20000000-0000-0000-0000-000000000003", slug: "networks-and-protocols", title: "Networks and protocols", icon: "🌐", colour: "var(--teal)", score: 34, label: "Beginning", questionsSeen: 18, accuracy: 48, trend: "down", explanation: "Protocol roles are the clearest next step. Retrieval practice will rebuild this gradually without erasing earlier progress.", lastPractised: "2026-07-10", practiceAvailable: true },
-];
+const topics: TopicMasteryInsight[] = demoCourse.topics.map((topic) => ({
+  topicId: topic.id, slug: topic.slug, title: topic.title, icon: topic.icon, colour: topic.colour,
+  score: 0, label: "Not started", questionsSeen: 0, accuracy: 0, trend: "steady",
+  explanation: "Complete some practice to establish your starting point.", lastPractised: undefined, practiceAvailable: true,
+}));
 
 export const demoProgress: ProgressSnapshot = {
   topics,

@@ -10,7 +10,7 @@ import { rateLimit } from "@/lib/security/rate-limit";
 import { demoAttemptAllowed, hasDemoAttemptPrefix } from "@/lib/security/boundaries";
 
 const databaseId = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i); const answer = z.union([z.string(), z.array(z.string()), z.record(z.string(), z.string()), z.null()]);
-const configSchema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.string(), examBoard: z.string(), topic: z.string(), questionCount: z.number(), difficulty: z.string(), timeLimitMinutes: z.number(), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) });
+const configSchema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.string(), examBoard: z.string(), topic: z.string(), paper: z.enum(["paper1", "paper2"]).optional(), questionCount: z.number(), difficulty: z.string(), timeLimitMinutes: z.number(), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) });
 const schema = z.object({ attemptId: z.string().min(1).max(100), questionIds: z.array(databaseId).min(1).max(10), answers: z.record(z.string(), answer), durationSeconds: z.number().int().min(0).max(86400), autoSubmitted: z.boolean(), questionTimings: z.record(z.string(), z.number().int().min(0).max(86400)), resultsRelease: z.enum(["immediate", "later"]), config: configSchema });
 
 export async function POST(request: Request) {

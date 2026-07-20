@@ -11,6 +11,7 @@
     "test": "node scripts/run-unit-tests.mjs",
     "test:watch": "node ./node_modules/vitest/vitest.mjs",
     "test:e2e": "node ./node_modules/@playwright/test/cli.js test",
+    "sync:ocr-gcse": "node scripts/sync-ocr-gcse.mjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {

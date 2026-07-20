@@ -45,7 +45,11 @@ export async function POST(request: Request) {
       const answerIds = new Map(saved.map((row) => [row.question_id, row.id])); const admin = createAdminClient();
       const { error: markError } = await admin.from("marking_results").insert(results.map((item) => ({ attempt_answer_id: answerIds.get(item.question.id)!, marks_awarded: item.marksAwarded, feedback: item, rubric_evidence: item.earnedConcepts, marked_by: "deterministic" }))); if (markError) return NextResponse.json({ error: "Marking results could not be stored." }, { status: 500 });
       const { error: attemptError } = await admin.from("attempts").update({ status: "marked", submitted_at: response.submittedAt, marked_at: response.submittedAt, score, available_marks: availableMarks, duration_seconds: parsed.data.durationSeconds }).eq("id", parsed.data.attemptId).eq("user_id", user.id); if (attemptError) return NextResponse.json({ error: "Attempt could not be finalised." }, { status: 500 });
-      const topicIds: Record<string, string> = { "systems-architecture": "20000000-0000-0000-0000-000000000001", "memory-and-storage": "20000000-0000-0000-0000-000000000002", "networks-and-protocols": "20000000-0000-0000-0000-000000000003" };
+      const { data: practiceSet } = await admin.from("practice_sets").select("course_id").eq("id", attempt.practice_set_id).single();
+      const { data: sectionRows } = practiceSet ? await admin.from("specification_sections").select("id").eq("course_id", practiceSet.course_id) : { data: [] };
+      const { data: topicRows } = sectionRows?.length ? await admin.from("topics").select("id,slug").in("specification_section_id", sectionRows.map((section) => section.id)) : { data: [] };
+      const topicIds: Record<string, string> = Object.fromEntries((topicRows ?? []).map((topic) => [topic.slug, topic.id]));
+      if ([...topicGroups.keys()].some((slug) => !topicIds[slug])) return NextResponse.json({ error: "Course topics could not be matched to this attempt." }, { status: 500 });
       const { data: existingMastery } = await admin.from("topic_mastery").select("topic_id,mastery_score,questions_seen").eq("user_id", user.id);
       const existingByTopic = new Map((existingMastery ?? []).map((item) => [item.topic_id, item]));
       response.masteryUpdates = [...topicGroups.entries()].map(([topicSlug, items]) => {

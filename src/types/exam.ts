@@ -6,6 +6,7 @@ export type ExamConfig = {
   qualification: string;
   examBoard: string;
   topic: string;
+  paper?: "paper1" | "paper2";
   questionCount: number;
   difficulty: string;
   timeLimitMinutes: number;

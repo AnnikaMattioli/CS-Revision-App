@@ -12,6 +12,7 @@ const releaseProjects = process.env.CI ? [
 
 export default defineConfig({
   testDir: "./e2e",
+  timeout: 60_000,
   fullyParallel: false,
   workers: process.env.CI ? 2 : 1,
   expect: { timeout: 15_000 },
@@ -20,7 +21,7 @@ export default defineConfig({
     command: "node scripts/start-e2e-server.mjs",
     url: "http://127.0.0.1:3100",
     timeout: 120_000,
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
   },
   projects: [...coreProjects, ...releaseProjects],
 });

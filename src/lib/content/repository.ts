@@ -50,7 +50,7 @@ export async function getActiveCourseContent(): Promise<CourseContent> {
 
     const solutions: WorkedSolution[] = (solutionRows ?? []).map((solution) => ({
       id: solution.id,
-      slug: slugify(solution.title),
+      slug: `${topicRow.slug}-${slugify(solution.title)}`,
       title: solution.title,
       prompt: solution.prompt,
       steps: solution.steps,

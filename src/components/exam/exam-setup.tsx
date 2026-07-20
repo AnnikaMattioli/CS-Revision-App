@@ -10,13 +10,14 @@ const kinds: Array<{ id: ExamKind; title: string; text: string; icon: React.Reac
   { id: "topic", title: "Topic test", text: "Focus on one area", icon: <BookOpenCheck /> },
   { id: "mixed", title: "Mixed test", text: "Balanced course retrieval", icon: <FileStack /> },
   { id: "custom", title: "Custom test", text: "Choose your settings", icon: <SlidersHorizontal /> },
-  { id: "full_mock", title: "Full-course mock", text: "All available questions", icon: <Clock3 /> },
+  { id: "full_mock", title: "Full exam paper", text: "80 marks · 90 minutes", icon: <Clock3 /> },
 ];
 
 export function ExamSetup({ qualification, examBoard, topics }: { qualification: string; examBoard: string; topics: PracticeTopicOption[] }) {
   const router = useRouter();
   const [kind, setKind] = useState<ExamKind>("mixed");
   const [topic, setTopic] = useState("mixed");
+  const [paper, setPaper] = useState<"paper1" | "paper2">("paper1");
   const [questionCount, setQuestionCount] = useState(10);
   const [difficulty, setDifficulty] = useState("mixed");
   const [minutes, setMinutes] = useState(15);
@@ -31,7 +32,7 @@ export function ExamSetup({ qualification, examBoard, topics }: { qualification:
 
   async function start() {
     setStarting(true); setError(undefined);
-    const config: ExamConfig = { kind, qualification, examBoard, topic: kind === "topic" ? topic : "mixed", questionCount: kind === "full_mock" ? 10 : questionCount, difficulty, timeLimitMinutes: minutes, allowBackwards: backwards, warnUnanswered: warnings, resultsRelease: release };
+    const config: ExamConfig = { kind, qualification, examBoard, topic: kind === "topic" ? topic : "mixed", paper: kind === "full_mock" ? paper : undefined, questionCount, difficulty, timeLimitMinutes: kind === "full_mock" ? 90 : minutes, allowBackwards: backwards, warnUnanswered: warnings, resultsRelease: release };
     try {
       const response = await fetch("/api/exam/start", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(config) });
       if (!response.ok) throw new Error();
@@ -52,7 +53,7 @@ export function ExamSetup({ qualification, examBoard, topics }: { qualification:
         <label className="text-sm font-black">Qualification<select className={selectClass} disabled><option>{qualification}</option></select></label>
         <label className="text-sm font-black">Exam board<select className={selectClass} disabled><option>{examBoard}</option></select></label>
         <label className="text-sm font-black">Topic<select className={selectClass} disabled={kind !== "topic" || !examAvailable} value={topic} onChange={(event) => setTopic(event.target.value)}><option value="mixed">Choose a topic</option>{topics.map((item) => <option key={item.slug} value={item.slug} disabled={!item.practiceAvailable}>{item.icon} {item.title}{item.practiceAvailable ? "" : " — coming soon"}</option>)}</select></label>
-        <label className="text-sm font-black">Questions<select className={selectClass} value={kind === "full_mock" ? 10 : questionCount} disabled={kind === "full_mock"} onChange={(event) => setQuestionCount(Number(event.target.value))}><option value="5">5 questions</option><option value="10">10 questions</option></select></label>
+        {kind === "full_mock" ? <label className="text-sm font-black">OCR component<select className={selectClass} value={paper} onChange={(event) => setPaper(event.target.value as "paper1" | "paper2")}><option value="paper1">Paper 1 · Computer systems</option><option value="paper2">Paper 2 · Algorithms and programming</option></select></label> : <label className="text-sm font-black">Questions<select className={selectClass} value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}><option value="5">5 questions</option><option value="10">10 questions</option><option value="20">20 questions</option></select></label>}
         <label className="text-sm font-black">Difficulty<select className={selectClass} value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option value="mixed">Mixed difficulty</option><option value="foundation">Foundation</option><option value="developing">Developing</option><option value="secure">Secure</option><option value="advanced">Advanced</option></select></label>
         <label className="text-sm font-black">Time limit<select className={selectClass} value={minutes} onChange={(event) => setMinutes(Number(event.target.value))}><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option></select></label>
       </div>
@@ -61,7 +62,7 @@ export function ExamSetup({ qualification, examBoard, topics }: { qualification:
       {error ? <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 font-bold text-red-700">{error}</p> : null}
       <button onClick={start} disabled={starting || !examAvailable || (kind === "topic" && topic === "mixed")} className="mt-7 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] px-6 font-black text-white disabled:opacity-50">{starting ? <LoaderCircle className="animate-spin" /> : <>Start timed test <ArrowRight size={18} /></>}</button>
     </section>
-    <aside className="space-y-4"><div className="rounded-2xl bg-slate-950 p-6 text-white"><p className="text-sm font-black text-violet-300">PAPER SUMMARY</p><p className="mt-4 text-3xl font-black">{kind === "full_mock" ? 10 : questionCount} questions</p><p className="mt-2 text-slate-300">About {kind === "full_mock" ? 20 : estimatedMarks} available marks</p><p className="mt-1 text-slate-300">{minutes} minute limit</p></div><div className="soft-card p-5"><p className="font-black">Exam conditions</p><ul className="mt-3 space-y-2 text-sm leading-6 text-muted"><li>✓ Answers autosave</li><li>✓ No hints or feedback</li><li>✓ Automatic time submission</li><li>✓ Review flags and palette</li></ul></div><p className="px-2 text-xs leading-5 text-muted">Question availability is shown honestly for your selected course. No official grade boundaries are inferred.</p></aside>
+    <aside className="space-y-4"><div className="rounded-2xl bg-slate-950 p-6 text-white"><p className="text-sm font-black text-violet-300">PAPER SUMMARY</p><p className="mt-4 text-3xl font-black">{kind === "full_mock" ? (paper === "paper1" ? "Paper 1" : "Paper 2") : `${questionCount} questions`}</p><p className="mt-2 text-slate-300">{kind === "full_mock" ? 80 : `About ${estimatedMarks}`} available marks</p><p className="mt-1 text-slate-300">{kind === "full_mock" ? 90 : minutes} minute limit</p></div><div className="soft-card p-5"><p className="font-black">Exam conditions</p><ul className="mt-3 space-y-2 text-sm leading-6 text-muted"><li>✓ Answers autosave</li><li>✓ No hints or feedback</li><li>✓ Automatic time submission</li><li>✓ Review flags and palette</li></ul></div><p className="px-2 text-xs leading-5 text-muted">Full papers follow the OCR 80-mark, 90-minute component structure. Questions are original and no official grade boundaries are inferred.</p></aside>
   </div>;
 }
 
