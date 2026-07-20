@@ -1,4 +1,5 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { hasSupabaseConfig } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/types/database";
@@ -11,7 +12,11 @@ export type CurrentAccount = {
 };
 
 export async function getCurrentAccount(): Promise<CurrentAccount | null> {
-  if (!hasSupabaseConfig()) return { userId: "demo-student", displayName: "Demo Student", role: "student", onboardingComplete: true };
+  if (!hasSupabaseConfig()) {
+    const demoRole = (await cookies()).get("bytewise-demo-role")?.value;
+    const role: UserRole = demoRole === "teacher" ? "teacher" : demoRole === "admin" ? "admin" : "student";
+    return { userId: `demo-${role}`, displayName: role === "teacher" ? "Demo Teacher" : role === "admin" ? "Demo Admin" : "Demo Student", role, onboardingComplete: true };
+  }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;

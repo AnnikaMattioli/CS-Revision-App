@@ -11,5 +11,5 @@ export const env = {
 };
 
 export function hasSupabaseConfig() {
-  return Boolean(url && key && !url.includes("your-project") && !key.includes("your_key"));
+  return Boolean(!env.demoMode && url && key && !url.includes("your-project") && !key.includes("your_key"));
 }

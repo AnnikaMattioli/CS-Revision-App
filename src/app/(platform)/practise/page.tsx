@@ -4,13 +4,12 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/content/breadcrumbs";
 import { PracticeLauncher } from "@/components/practice/practice-launcher";
 import { getActiveCourseContent } from "@/lib/content/repository";
-import { hasPracticeQuestions } from "@/lib/practice/topic-availability";
+import { getPracticeTopicOptions } from "@/lib/practice/course-topics";
 
 export const metadata: Metadata = { title: "Practise" };
 export default async function PractisePage({ searchParams }: { searchParams: Promise<{ topic?: string; mode?: string }> }) {
   const query = await searchParams;
   const course = await getActiveCourseContent();
-  const supportsCurrentQuestionBank = course.slug === "ocr-gcse-computer-science";
-  const topics = course.topics.map((topic) => ({ slug: topic.slug, title: topic.title, icon: topic.icon, practiceAvailable: supportsCurrentQuestionBank && hasPracticeQuestions(topic.slug) }));
+  const topics = getPracticeTopicOptions(course);
   return <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl px-5 pb-20 pt-20 sm:px-8 lg:pt-10"><Breadcrumbs items={[{ label: "Practise" }]} /><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div className="max-w-3xl"><p className="flex items-center gap-2 font-black text-[var(--violet)]"><Sparkles size={18} /> ORIGINAL EXAM-STYLE PRACTICE</p><h1 className="mt-2 text-4xl font-black tracking-tight">Turn knowledge into marks</h1><p className="mt-3 text-lg leading-8 text-muted">Build a set for {course.title}, answer without seeing the mark scheme, then get detailed feedback on every mark.</p></div><Link href="/practise/history" className="flex min-h-11 items-center gap-2 rounded-xl border bg-[var(--surface)] px-4 font-black"><History size={18} />Attempt history</Link></div><PracticeLauncher initialTopic={query.topic ?? "mixed"} initialMode={query.mode ?? "adaptive"} topics={topics} /></main>;
 }

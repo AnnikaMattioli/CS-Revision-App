@@ -4,7 +4,7 @@ import { ArrowRight, BookOpenCheck, Clock3, FileStack, LoaderCircle, SlidersHori
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { ExamConfig, ExamKind } from "@/types/exam";
-import type { PracticeTopicOption } from "@/components/practice/practice-launcher";
+import type { PracticeTopicOption } from "@/lib/practice/course-topics";
 
 const kinds: Array<{ id: ExamKind; title: string; text: string; icon: React.ReactNode }> = [
   { id: "topic", title: "Topic test", text: "Focus on one area", icon: <BookOpenCheck /> },

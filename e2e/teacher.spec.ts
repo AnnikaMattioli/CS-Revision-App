@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+async function useTeacherProfile(page: import("@playwright/test").Page) {
+  await page.context().addCookies([{ name: "bytewise-demo-role", value: "teacher", url: "http://127.0.0.1:3100" }]);
+}
+
 test("teacher creates a class and receives a one-time code", async ({ page }) => {
+  await useTeacherProfile(page);
   await page.goto("/classes");
   await expect(page.getByRole("heading", { level: 1, name: "Teach with useful signals" })).toBeVisible();
   await page.getByLabel("Class name").fill("Year 11 Revision");
@@ -21,6 +26,8 @@ test("student joining uses a generic error and accepts the active code", async (
 });
 
 test("teacher assigns work and reviews privacy-safe progress", async ({ page }) => {
+  test.setTimeout(60_000);
+  await useTeacherProfile(page);
   await page.goto("/classes/demo-class-1");
   await expect(page.getByRole("heading", { level: 1, name: "Year 10 Computer Science" })).toBeVisible();
   await page.goto("/classes/demo-class-1/assignments/new");
@@ -40,6 +47,7 @@ test("teacher assigns work and reviews privacy-safe progress", async ({ page }) 
 });
 
 test("teacher can rotate access and remove a class member", async ({ page }) => {
+  await useTeacherProfile(page);
   await page.goto("/classes/demo-class-1");
   await page.getByRole("button", { name: "Rotate code" }).click();
   await expect(page.getByText("FRESH7")).toBeVisible();

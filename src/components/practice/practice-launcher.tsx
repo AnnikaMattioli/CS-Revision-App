@@ -3,8 +3,7 @@
 import { ArrowRight, Clock3, LoaderCircle, Shuffle, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-export type PracticeTopicOption = { slug: string; title: string; icon: string; practiceAvailable: boolean };
+import type { PracticeTopicOption } from "@/lib/practice/course-topics";
 
 export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adaptive", topics }: { initialTopic?: string; initialMode?: string; topics: PracticeTopicOption[] }) {
   const router = useRouter();

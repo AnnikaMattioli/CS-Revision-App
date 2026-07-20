@@ -52,6 +52,7 @@ export function CoursePicker({ onboarding = false }: { onboarding?: boolean }) {
       } else if (onboarding) {
         window.localStorage.setItem("bytewise:demo-role", role);
         window.localStorage.setItem("bytewise:demo-course", selected.id);
+        document.cookie = `bytewise-demo-role=${role}; Path=/; SameSite=Lax`;
       }
       router.push(onboarding && role === "teacher" ? "/teacher" : "/dashboard");
       router.refresh();
