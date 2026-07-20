@@ -17,6 +17,7 @@ async function getStudentName() {
 
 export default async function DashboardPage() {
   const account = await getCurrentAccount();
+  if (!account && hasSupabaseConfig()) redirect("/sign-in?next=/dashboard");
   if (account?.role === "teacher" || account?.role === "admin") redirect("/teacher");
   const [studentName, progress] = await Promise.all([getStudentName(), getProgressSnapshot()]);
   const today = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
