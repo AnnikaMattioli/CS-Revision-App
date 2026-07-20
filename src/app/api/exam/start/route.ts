@@ -2,19 +2,19 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/env";
 import { questionBankForCourse } from "@/lib/practice/question-bank";
-import { selectAqaGcseFullPaper, selectOcrGcseFullPaper } from "@/lib/practice/full-paper";
+import { selectAqaGcseFullPaper, selectOcrALevelFullPaper, selectOcrGcseFullPaper } from "@/lib/practice/full-paper";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/security/rate-limit";
 
-const schema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.literal("GCSE"), examBoard: z.enum(["OCR", "AQA"]), topic: z.string().max(80), paper: z.enum(["paper1", "paper2"]).optional(), questionCount: z.number().int().min(1).max(20), difficulty: z.string().max(30), timeLimitMinutes: z.number().int().min(1).max(180), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) });
+const schema = z.object({ kind: z.enum(["topic", "mixed", "custom", "full_mock", "assignment"]), qualification: z.enum(["GCSE", "A Level"]), examBoard: z.enum(["OCR", "AQA"]), topic: z.string().max(80), paper: z.enum(["paper1", "paper2"]).optional(), questionCount: z.number().int().min(1).max(20), difficulty: z.string().max(30), timeLimitMinutes: z.number().int().min(1).max(180), allowBackwards: z.boolean(), warnUnanswered: z.boolean(), resultsRelease: z.enum(["immediate", "later"]) }).refine((value) => value.qualification === "GCSE" || value.examBoard === "OCR", { message: "This A-level question bank is not published yet." });
 export async function POST(request: Request) {
   const limited = rateLimit(request, "exam-start", { limit: 20, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid exam configuration." }, { status: 400 }); let config = parsed.data;
-  const courseId = config.examBoard === "AQA" ? "10000000-0000-0000-0000-000000000002" : "10000000-0000-0000-0000-000000000001";
+  const courseId = config.qualification === "A Level" ? "10000000-0000-0000-0000-000000000003" : config.examBoard === "AQA" ? "10000000-0000-0000-0000-000000000002" : "10000000-0000-0000-0000-000000000001";
   const bank = questionBankForCourse(courseId);
-  if (config.kind === "full_mock") config = { ...config, paper: config.paper ?? "paper1", timeLimitMinutes: config.examBoard === "AQA" ? (config.paper === "paper2" ? 105 : 120) : 90 };
+  if (config.kind === "full_mock") config = { ...config, paper: config.paper ?? "paper1", timeLimitMinutes: config.qualification === "A Level" ? 150 : config.examBoard === "AQA" ? (config.paper === "paper2" ? 105 : 120) : 90 };
   if (config.kind === "full_mock") {
-    const paperQuestions = config.examBoard === "AQA" ? selectAqaGcseFullPaper(bank, config.paper ?? "paper1") : selectOcrGcseFullPaper(bank, config.paper ?? "paper1");
+    const paperQuestions = config.qualification === "A Level" ? selectOcrALevelFullPaper(bank, config.paper ?? "paper1") : config.examBoard === "AQA" ? selectAqaGcseFullPaper(bank, config.paper ?? "paper1") : selectOcrGcseFullPaper(bank, config.paper ?? "paper1");
     const questionIds = paperQuestions.map((question) => question.id);
     config = { ...config, questionCount: questionIds.length };
     return startAttempt(config, questionIds);
@@ -30,7 +30,7 @@ async function startAttempt(config: z.infer<typeof schema>, questionIds: string[
   if (!hasSupabaseConfig()) return NextResponse.json({ attemptId: `exam-demo-${Date.now()}`, questionIds, config });
   const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   const { data: enrolment } = await supabase.from("user_course_enrolments").select("course_id").eq("user_id", user.id).eq("is_active", true).maybeSingle(); const courseId = enrolment?.course_id ?? "10000000-0000-0000-0000-000000000001";
-  const { data: paper, error: paperError } = await supabase.from("practice_sets").insert({ owner_id: user.id, course_id: courseId, title: config.kind === "full_mock" ? `${config.examBoard} GCSE ${config.paper === "paper2" ? "Paper 2" : "Paper 1"}` : "Timed exam practice", mode: "exam", time_limit_seconds: config.timeLimitMinutes * 60, exam_kind: config.kind, allow_backwards: config.allowBackwards, warn_unanswered: config.warnUnanswered, results_release: config.resultsRelease, configuration: config }).select("id").single(); if (paperError || !paper) return NextResponse.json({ error: "Exam paper could not be created." }, { status: 500 });
+  const { data: paper, error: paperError } = await supabase.from("practice_sets").insert({ owner_id: user.id, course_id: courseId, title: config.kind === "full_mock" ? `${config.examBoard} ${config.qualification} ${config.paper === "paper2" ? "Paper 2" : "Paper 1"}` : "Timed exam practice", mode: "exam", time_limit_seconds: config.timeLimitMinutes * 60, exam_kind: config.kind, allow_backwards: config.allowBackwards, warn_unanswered: config.warnUnanswered, results_release: config.resultsRelease, configuration: config }).select("id").single(); if (paperError || !paper) return NextResponse.json({ error: "Exam paper could not be created." }, { status: 500 });
   const { error: linksError } = await supabase.from("practice_set_questions").insert(questionIds.map((questionId, index) => ({ practice_set_id: paper.id, question_id: questionId, sort_order: index + 1 }))); if (linksError) return NextResponse.json({ error: "Exam questions could not be selected." }, { status: 500 });
   const deadline = new Date(Date.now() + config.timeLimitMinutes * 60000).toISOString(); const { data: attempt, error: attemptError } = await supabase.from("attempts").insert({ user_id: user.id, practice_set_id: paper.id, deadline_at: deadline }).select("id").single(); if (attemptError || !attempt) return NextResponse.json({ error: "Exam attempt could not be started." }, { status: 500 });
   return NextResponse.json({ attemptId: attempt.id, questionIds, config });

@@ -18,6 +18,15 @@ export const PRACTICE_TOPIC_SLUGS = new Set([
   "cyber-security",
   "relational-databases-and-sql",
   "ethical-legal-environmental-impacts",
+  "processors-io-and-storage",
+  "software-development",
+  "exchanging-data",
+  "data-types-structures-and-algorithms",
+  "legal-moral-cultural-ethical-issues",
+  "computational-thinking",
+  "problem-solving-and-programming",
+  "advanced-algorithms",
+  "programming-project",
 ]);
 
 export function hasPracticeQuestions(topicSlug: string) {

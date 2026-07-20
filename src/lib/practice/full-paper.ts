@@ -2,6 +2,7 @@ import type { ProtectedQuestion } from "@/types/practice";
 
 export type OcrGcsePaper = "paper1" | "paper2";
 export type AqaGcsePaper = OcrGcsePaper;
+export type OcrALevelPaper = OcrGcsePaper;
 
 const paperTopics: Record<OcrGcsePaper, Set<string>> = {
   paper1: new Set(["systems-architecture", "memory-and-storage", "networks-and-protocols", "network-security", "systems-software", "impacts-of-digital-technology"]),
@@ -13,12 +14,21 @@ const aqaPaperTopics: Record<AqaGcsePaper, Set<string>> = {
   paper2: new Set(["data-representation", "computer-systems", "computer-networks", "cyber-security", "relational-databases-and-sql", "ethical-legal-environmental-impacts"]),
 };
 
+const ocrALevelPaperTopics: Record<OcrALevelPaper, Set<string>> = {
+  paper1: new Set(["processors-io-and-storage", "software-development", "exchanging-data", "data-types-structures-and-algorithms", "legal-moral-cultural-ethical-issues"]),
+  paper2: new Set(["computational-thinking", "problem-solving-and-programming", "advanced-algorithms"]),
+};
+
 export function selectOcrGcseFullPaper(bank: ProtectedQuestion[], paper: OcrGcsePaper, targetMarks = 80) {
   return selectFullPaper(bank, paperTopics[paper], targetMarks);
 }
 
 export function selectAqaGcseFullPaper(bank: ProtectedQuestion[], paper: AqaGcsePaper, targetMarks = 90) {
   return selectFullPaper(bank, aqaPaperTopics[paper], targetMarks);
+}
+
+export function selectOcrALevelFullPaper(bank: ProtectedQuestion[], paper: OcrALevelPaper, targetMarks = 140) {
+  return selectFullPaper(bank, ocrALevelPaperTopics[paper], targetMarks);
 }
 
 function selectFullPaper(bank: ProtectedQuestion[], topics: Set<string>, targetMarks: number) {

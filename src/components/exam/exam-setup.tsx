@@ -27,9 +27,10 @@ export function ExamSetup({ qualification, examBoard, topics }: { qualification:
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string>();
   const availableTopics = topics.filter((item) => item.practiceAvailable);
-  const examAvailable = qualification === "GCSE" && ["OCR", "AQA"].includes(examBoard) && availableTopics.length > 0;
-  const fullPaperMarks = examBoard === "AQA" ? 90 : 80;
-  const fullPaperMinutes = examBoard === "AQA" ? (paper === "paper2" ? 105 : 120) : 90;
+  const ocrALevel = qualification === "A Level" && examBoard === "OCR";
+  const examAvailable = ((qualification === "GCSE" && ["OCR", "AQA"].includes(examBoard)) || ocrALevel) && availableTopics.length > 0;
+  const fullPaperMarks = ocrALevel ? 140 : examBoard === "AQA" ? 90 : 80;
+  const fullPaperMinutes = ocrALevel ? 150 : examBoard === "AQA" ? (paper === "paper2" ? 105 : 120) : 90;
   const estimatedMarks = useMemo(() => Math.round(questionCount * 2), [questionCount]);
 
   async function start() {
@@ -39,7 +40,7 @@ export function ExamSetup({ qualification, examBoard, topics }: { qualification:
       const response = await fetch("/api/exam/start", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(config) });
       if (!response.ok) throw new Error();
       const data = await response.json() as { attemptId: string; questionIds: string[]; config: ExamConfig };
-      const query = new URLSearchParams({ ids: data.questionIds.join(","), time: String(data.config.timeLimitMinutes), back: data.config.allowBackwards ? "1" : "0", warn: data.config.warnUnanswered ? "1" : "0", release: data.config.resultsRelease, kind: data.config.kind, board: data.config.examBoard, paper: data.config.paper ?? "" });
+      const query = new URLSearchParams({ ids: data.questionIds.join(","), time: String(data.config.timeLimitMinutes), back: data.config.allowBackwards ? "1" : "0", warn: data.config.warnUnanswered ? "1" : "0", release: data.config.resultsRelease, kind: data.config.kind, board: data.config.examBoard, qualification: data.config.qualification, paper: data.config.paper ?? "" });
       router.push(`/exam-practice/session/${data.attemptId}?${query}`);
     } catch {
       setError("The exam could not be prepared. Please try again."); setStarting(false);
