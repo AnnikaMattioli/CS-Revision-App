@@ -1,5 +1,6 @@
 import { ocrGcseBlueprints } from "@/data/ocr-gcse";
-import type { CourseContent, LessonSection, WorkedSolution } from "@/types/content";
+import { buildWorkedSolution } from "@/lib/content/worked-solution-builder";
+import type { CourseContent, LessonSection } from "@/types/content";
 
 const colours = ["var(--violet)", "var(--blue)", "var(--teal)", "var(--coral)"];
 
@@ -21,20 +22,6 @@ function lessonSection(topicIndex: number, unitIndex: number, factIndex: number,
   };
 }
 
-function workedSolution(topicIndex: number, topicSlug: string, topicTitle: string, factIndex: number): WorkedSolution {
-  const item = ocrGcseBlueprints[topicIndex - 1].units.flatMap((unit) => unit.facts)[factIndex];
-  return {
-    id: uuid(50, topicIndex, factIndex + 1), slug: `${topicSlug}-worked-${factIndex + 1}`, title: `Worked exam response ${factIndex + 1}`,
-    prompt: `${item.question} Explain your answer using precise technical terminology. [3 marks]`, topicSlug, topicTitle,
-    steps: [
-      { title: "Decode the command", explanation: "Identify exactly what must be explained and keep every sentence relevant to that focus.", working: item.question },
-      { title: "Select technical facts", explanation: `Build the response around these marking ideas: ${item.keywords.join(", ")}.` },
-      { title: "Link cause and effect", explanation: "State the fact, then explain what it means or why it matters. This turns recall into an exam-quality explanation." },
-    ],
-    finalAnswer: item.answer,
-  };
-}
-
 export const ocrGcseCourse: CourseContent = {
   id: "10000000-0000-0000-0000-000000000001", slug: "ocr-gcse-computer-science", title: "OCR GCSE Computer Science",
   description: "Complete original revision coverage for OCR J277, organised across both assessed components.", qualification: "GCSE", examBoard: "OCR",
@@ -50,7 +37,7 @@ export const ocrGcseCourse: CourseContent = {
         sections: unit.facts.map((item, factOffset) => lessonSection(topicIndex, unitOffset + 1, factOffset + 1, item.question, item.answer, item.keywords)),
       })),
       flashcards: facts.map((item, factOffset) => ({ id: uuid(40, topicIndex, factOffset + 1), front: item.question, back: item.answer, hint: `Include: ${item.keywords.join(", ")}` })),
-      workedSolutions: Array.from({ length: 5 }, (_, factIndex) => workedSolution(topicIndex, topic.slug, topic.title, factIndex)),
+      workedSolutions: Array.from({ length: 5 }, (_, solutionIndex) => buildWorkedSolution({ id: uuid(50, topicIndex, solutionIndex + 1), blueprint: topic, topicIndex, solutionIndex, qualification: "GCSE" })),
     };
   }),
 };

@@ -44,11 +44,15 @@ export function selectAqaALevelFullPaper(bank: ProtectedQuestion[], paper: AqaAL
 function selectFullPaper(bank: ProtectedQuestion[], topics: Set<string>, targetMarks: number) {
   const eligible = bank.filter((question) => topics.has(question.topicSlug));
   const slugs = [...topics];
-  const priority = ["short_answer", "multiple_choice", "boolean"];
-  const ordered = priority.flatMap((type) => {
-    const groups = slugs.map((slug) => eligible.filter((question) => question.topicSlug === slug && question.type === type));
-    return Array.from({ length: Math.max(0, ...groups.map((group) => group.length)) }, (_, index) => groups.flatMap((group) => group[index] ? [group[index]] : [])).flat();
-  });
+  const types = ["short_answer", "multiple_choice", "boolean"];
+  const groups = types.map((type) => slugs.map((slug) => eligible.filter((question) => question.topicSlug === slug && question.type === type)));
+  const longest = Math.max(0, ...groups.flat().map((group) => group.length));
+  const ordered: ProtectedQuestion[] = [];
+  for (let index = 0; index < longest; index += 1) {
+    for (const typeGroups of groups) {
+      for (const group of typeGroups) if (group[index]) ordered.push(group[index]);
+    }
+  }
   const selected: ProtectedQuestion[] = [];
   let marks = 0;
   for (const question of ordered) {

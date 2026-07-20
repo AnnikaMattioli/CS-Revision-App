@@ -52,6 +52,7 @@ export async function getActiveCourseContent(): Promise<CourseContent> {
       id: solution.id,
       slug: `${topicRow.slug}-${slugify(solution.title)}`,
       title: solution.title,
+      marks: Number(solution.prompt.match(/\[(\d+)\s+marks?\]/i)?.[1] ?? 1),
       prompt: solution.prompt,
       steps: solution.steps,
       finalAnswer: solution.final_answer,

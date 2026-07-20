@@ -1,5 +1,6 @@
 import { ocrALevelBlueprints } from "@/data/ocr-a-level";
-import type { CourseContent, LessonSection, WorkedSolution } from "@/types/content";
+import { buildWorkedSolution } from "@/lib/content/worked-solution-builder";
+import type { CourseContent, LessonSection } from "@/types/content";
 
 const colours = ["var(--violet)", "var(--blue)", "var(--teal)", "var(--coral)"];
 const blueprints = [...ocrALevelBlueprints].sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
@@ -13,19 +14,6 @@ function section(topic: number, unit: number, index: number, question: string, a
   };
 }
 
-function solution(topicIndex: number, topicSlug: string, topicTitle: string, factIndex: number): WorkedSolution {
-  const item = blueprints[topicIndex - 1].units.flatMap((unit) => unit.facts)[factIndex];
-  return {
-    id: uuid(52, topicIndex, factIndex + 1), slug: `${topicSlug}-worked-${factIndex + 1}`, title: `Worked A-level response ${factIndex + 1}`,
-    prompt: `${item.question} Develop and apply your answer using precise technical terminology. [4 marks]`, topicSlug, topicTitle,
-    steps: [
-      { title: "Decode the demand", explanation: "Identify the command word, subject and any scenario constraints.", working: item.question },
-      { title: "Select marking ideas", explanation: `Use the relevant concepts: ${item.keywords.join(", ")}.` },
-      { title: "Develop and apply", explanation: "Connect each fact to its effect and apply it directly to the stated context." },
-    ], finalAnswer: item.answer,
-  };
-}
-
 export const ocrALevelCourse: CourseContent = {
   id: "10000000-0000-0000-0000-000000000003", slug: "ocr-a-level-computer-science", title: "OCR A-level Computer Science",
   description: "Complete original revision coverage for OCR H446 theory and the programming project.", qualification: "A Level", examBoard: "OCR",
@@ -36,7 +24,7 @@ export const ocrALevelCourse: CourseContent = {
       colour: colours[offset % colours.length], estimatedMinutes: topic.units.length * 15, learningObjectives: topic.units.map((unit) => unit.summary), mastery: 0, subtopicTitle: topic.units[0].title,
       lessons: topic.units.map((unit, unitOffset) => ({ id: uuid(32, topicIndex, unitOffset + 1), slug: unit.slug, title: unit.title, summary: unit.summary, estimatedMinutes: 15, sections: unit.facts.map((item, factOffset) => section(topicIndex, unitOffset + 1, factOffset + 1, item.question, item.answer, item.keywords)) })),
       flashcards: facts.map((item, index) => ({ id: uuid(42, topicIndex, index + 1), front: item.question, back: item.answer, hint: `Include: ${item.keywords.join(", ")}` })),
-      workedSolutions: Array.from({ length: 5 }, (_, index) => solution(topicIndex, topic.slug, topic.title, index)),
+      workedSolutions: Array.from({ length: 5 }, (_, solutionIndex) => buildWorkedSolution({ id: uuid(52, topicIndex, solutionIndex + 1), blueprint: topic, topicIndex, solutionIndex, qualification: "A Level" })),
     };
   }),
 };

@@ -46,6 +46,32 @@ const ruleId = (topic, item) => uuid(syncConfig.ruleGroup, topic, item);
 const difficulties = ["foundation", "developing", "secure", "advanced", "exam_challenge"];
 const databaseDifficulty = (value) => value === "foundation" ? "foundation" : ["advanced", "exam_challenge"].includes(value) ? "stretch" : "standard";
 
+function workedSolutionsForTopic(topic, topicIndex, subtopics) {
+  const facts = topic.units.flatMap((unit) => unit.facts.map((item) => ({ ...item, subtopicId: subtopics.get(unit.slug) })));
+  const maximum = courseKey.includes("a-level") ? 12 : 8;
+  const stride = courseKey.includes("a-level") ? 5 : 3;
+  return Array.from({ length: 5 }, (_, solutionIndex) => {
+    const marks = ((topicIndex - 1 + solutionIndex * stride) % maximum) + 1;
+    const start = (solutionIndex * 4) % facts.length;
+    const selected = Array.from({ length: marks }, (_, offset) => facts[(start + offset) % facts.length]);
+    const keywords = [...new Set(selected.flatMap((item) => item.keywords))].slice(0, 8);
+    const finalAnswer = selected.map((item) => `${item.answer.trim().replace(/[.!?]+$/, "")}.`).join(" ");
+    return {
+      id: uuid(syncConfig.solutionGroup, topicIndex, solutionIndex + 1),
+      subtopic_id: selected[0].subtopicId,
+      title: `${marks}-mark worked response ${solutionIndex + 1}`,
+      prompt: marks === 1 ? `${selected[0].question} [1 mark]` : `Explain the key ideas in ${topic.title}, including ${keywords.join(", ")}. [${marks} marks]`,
+      steps: [
+        { title: "Decode the command", explanation: `The response needs ${marks} precise, relevant ${marks === 1 ? "sentence" : "sentences"}.`, working: selected.map((item) => item.question).join("\n") },
+        { title: "Plan the marking points", explanation: `Build one developed sentence for each available mark. Use ${keywords.join(", ")} accurately.` },
+        { title: "Write the model response", explanation: `Write exactly ${marks} complete ${marks === 1 ? "sentence" : "sentences"}, each adding a distinct accurate marking point.` },
+      ],
+      final_answer: finalAnswer,
+      status: "published",
+    };
+  });
+}
+
 function questionsForTopic(topic, topicIndex, subtopics) {
   const facts = topic.units.flatMap((unit) => unit.facts.map((item) => ({ ...item, lessonSlug: unit.slug, subtopicId: subtopics.get(unit.slug) })));
   const rows = [];
@@ -108,7 +134,7 @@ async function main() {
     await checked(supabase.from("lesson_sections").upsert(sectionRows, { onConflict: "id" }), `Upsert ${blueprint.slug} lesson sections`);
     const facts = blueprint.units.flatMap((unit) => unit.facts.map((item) => ({ ...item, subtopicId: subtopics.get(unit.slug) })));
     await checked(supabase.from("flashcards").upsert(facts.map((item, index) => ({ id: uuid(syncConfig.flashcardGroup, topicIndex, index + 1), subtopic_id: item.subtopicId, front: item.question, back: item.answer, hint: `Include: ${item.keywords.join(", ")}`, sort_order: index + 1, status: "published" })), { onConflict: "id" }), `Upsert ${blueprint.slug} flashcards`);
-    await checked(supabase.from("worked_solutions").upsert(facts.slice(0, 5).map((item, index) => ({ id: uuid(syncConfig.solutionGroup, topicIndex, index + 1), subtopic_id: item.subtopicId, title: `Worked exam response ${index + 1}`, prompt: `${item.question} Explain your answer using precise technical terminology. [3 marks]`, steps: [{ title: "Decode the command", explanation: "Identify exactly what must be explained." }, { title: "Select technical facts", explanation: `Use ${item.keywords.join(", ")}.` }, { title: "Link cause and effect", explanation: "State the fact, then explain what it means or why it matters." }], final_answer: item.answer, status: "published" })), { onConflict: "id" }), `Upsert ${blueprint.slug} worked solutions`);
+    await checked(supabase.from("worked_solutions").upsert(workedSolutionsForTopic(blueprint, topicIndex, subtopics), { onConflict: "id" }), `Upsert ${blueprint.slug} worked solutions`);
     for (const row of questionsForTopic(blueprint, topicIndex, subtopics)) { allQuestionRows.push(row.question); allRuleRows.push(row.rule); }
     process.stdout.write(`Prepared ${blueprint.code} ${blueprint.title}\n`);
   }

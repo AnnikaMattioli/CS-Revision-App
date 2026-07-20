@@ -26,6 +26,7 @@ export type WorkedSolution = {
   id: string;
   slug: string;
   title: string;
+  marks: number;
   prompt: string;
   steps: Array<{ title: string; explanation: string; working?: string }>;
   finalAnswer: string;

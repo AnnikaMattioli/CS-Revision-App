@@ -16,9 +16,12 @@ test("timed exam autosaves, warns and shows time analysis", async ({ page }) => 
   await expect(page.getByRole("dialog")).toContainText("4 unanswered questions");
   await page.getByRole("dialog").getByRole("button", { name: "Submit exam" }).click();
   await expect(page).toHaveURL(/\/exam-practice\/results\/exam-demo-/, { timeout: 15_000 });
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("20%");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/\d+%/);
+  await expect(page.getByText(/1 of \d+ marks/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Time management" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Detailed review" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Review answers" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Return to dashboard" })).toBeVisible();
   await expect(page.getByText("Not configured")).toBeVisible();
 });
 

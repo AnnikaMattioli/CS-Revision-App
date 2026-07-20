@@ -14,6 +14,7 @@ describe("OCR GCSE full papers", () => {
     expect(questions.reduce((total, question) => total + question.marks, 0)).toBe(80);
     expect(new Set(questions.map((question) => question.topicSlug)).size).toBe(paper === "paper1" ? 6 : 5);
     expect(questions.some((question) => question.type === "short_answer")).toBe(true);
+    expect(new Set(questions.map((question) => question.type)).size).toBeGreaterThan(1);
   });
 });
 
@@ -22,6 +23,7 @@ describe("AQA GCSE full papers", () => {
     const questions = selectAqaGcseFullPaper(aqaGcseQuestionBank, paper);
     expect(questions.reduce((total, question) => total + question.marks, 0)).toBe(90);
     expect(new Set(questions.map((question) => question.topicSlug)).size).toBe(paper === "paper1" ? 2 : 6);
+    expect(new Set(questions.map((question) => question.type)).size).toBeGreaterThan(1);
   });
 });
 
@@ -31,6 +33,7 @@ describe("OCR A-level full papers", () => {
     expect(questions.reduce((total, question) => total + question.marks, 0)).toBe(140);
     expect(new Set(questions.map((question) => question.topicSlug)).size).toBe(paper === "paper1" ? 5 : 3);
     expect(questions.every((question) => question.topicSlug !== "programming-project")).toBe(true);
+    expect(new Set(questions.map((question) => question.type)).size).toBeGreaterThan(1);
   });
 });
 
@@ -40,5 +43,6 @@ describe("AQA A-level full papers", () => {
     expect(questions.reduce((total, question) => total + question.marks, 0)).toBe(100);
     expect(new Set(questions.map((question) => question.topicSlug)).size).toBe(paper === "paper1" ? 5 : 8);
     expect(questions.every((question) => question.topicSlug !== "non-exam-assessment-project")).toBe(true);
+    expect(new Set(questions.map((question) => question.type)).size).toBeGreaterThan(1);
   });
 });

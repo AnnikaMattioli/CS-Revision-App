@@ -37,4 +37,9 @@ test("a learning topic links to its lesson, flashcards and worked solutions", as
   await page.getByRole("link", { name: /Start learning/ }).click();
   await expect(page).toHaveURL(/\/learn\/systems-architecture\/cpu-purpose-components$/);
   await expect(page.getByRole("heading", { level: 1, name: "CPU purpose and components" })).toBeVisible();
+  const firstCheck = page.getByRole("group", { name: "Quick check" }).first();
+  await firstCheck.getByRole("button").first().click();
+  await expect(firstCheck.getByText("Not quite", { exact: false })).toBeVisible();
+  await firstCheck.getByRole("button").nth(1).click();
+  await expect(firstCheck.getByText("Correct", { exact: false })).toBeVisible();
 });

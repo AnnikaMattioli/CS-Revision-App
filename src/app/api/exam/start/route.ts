@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/env";
 import { questionBankForCourse } from "@/lib/practice/question-bank";
+import { interleaveQuestionTypes } from "@/lib/practice/question-selection";
 import { selectAqaALevelFullPaper, selectAqaGcseFullPaper, selectOcrALevelFullPaper, selectOcrGcseFullPaper } from "@/lib/practice/full-paper";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -19,10 +20,10 @@ export async function POST(request: Request) {
     config = { ...config, questionCount: questionIds.length };
     return startAttempt(config, questionIds);
   }
-  let ordered = bank.map((question) => ({ id: question.id, topic: question.topicSlug, difficulty: question.difficulty }));
-  if (config.difficulty !== "mixed") ordered = [...ordered].sort((a, b) => Number(b.difficulty === config.difficulty) - Number(a.difficulty === config.difficulty));
-  if (config.kind === "topic" && config.topic !== "mixed") ordered = ordered.filter((question) => question.topic === config.topic);
-  const questionIds = ordered.slice(0, config.questionCount).map((item) => item.id);
+  let candidates = [...bank];
+  if (config.difficulty !== "mixed") candidates.sort((a, b) => Number(b.difficulty === config.difficulty) - Number(a.difficulty === config.difficulty));
+  if (config.kind === "topic" && config.topic !== "mixed") candidates = candidates.filter((question) => question.topicSlug === config.topic);
+  const questionIds = interleaveQuestionTypes(candidates).slice(0, config.questionCount).map((item) => item.id);
   return startAttempt(config, questionIds);
 }
 
