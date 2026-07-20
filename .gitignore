@@ -14,3 +14,4 @@ next-env.d.ts
 supabase/.temp/
 # Unrelated nested repository; the application repository is this directory.
 /CS-Revision-App/
+/.vercel/
