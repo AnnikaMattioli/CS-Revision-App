@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { questionBank } from "@/lib/practice/question-bank";
 import { markQuestion } from "@/lib/practice/marking";
+import { answerRowsForSubmission } from "@/lib/practice/submission";
 import { calculateMastery } from "@/lib/progress/mastery";
 import type { PracticeAnswer, PracticeResult } from "@/types/practice";
 import { createClient } from "@/lib/supabase/server";
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
       const { data: setQuestions } = await supabase.from("practice_set_questions").select("question_id").eq("practice_set_id", attempt.practice_set_id);
       const allowed = new Set((setQuestions ?? []).map((item) => item.question_id));
       if (parsed.data.questionIds.some((id) => !allowed.has(id))) return NextResponse.json({ error: "Questions do not belong to this attempt." }, { status: 403 });
-      const rows = parsed.data.questionIds.map((questionId) => ({ attempt_id: parsed.data.attemptId, question_id: questionId, answer: parsed.data.answers[questionId] ?? null, flagged: false }));
+      const rows = answerRowsForSubmission(parsed.data.attemptId, parsed.data.questionIds, parsed.data.answers);
       const { data: saved, error: saveError } = await supabase.from("attempt_answers").upsert(rows, { onConflict: "attempt_id,question_id" }).select("id,question_id"); if (saveError || !saved) return NextResponse.json({ error: "Answers could not be saved." }, { status: 500 });
       const answerIds = new Map(saved.map((row) => [row.question_id, row.id])); const admin = createAdminClient();
       const { error: markError } = await admin.from("marking_results").insert(results.map((item) => ({ attempt_answer_id: answerIds.get(item.question.id)!, marks_awarded: item.marksAwarded, feedback: item, rubric_evidence: item.earnedConcepts, marked_by: "deterministic" }))); if (markError) return NextResponse.json({ error: "Marking results could not be stored." }, { status: 500 });

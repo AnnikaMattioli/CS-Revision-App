@@ -1,12 +1,12 @@
 export type AdaptiveCandidate = { id: string; topicSlug: string; difficulty: string };
 export type QuestionHistory = { questionId: string; seenCount: number; lastSeenDaysAgo?: number; recentlyIncorrect?: boolean };
 export type AdaptiveWeights = { weakTopic: number; recentIncorrect: number; suitableDifficulty: number; spacedRetrieval: number; unseen: number };
-export type AdaptiveSelection = AdaptiveCandidate & { adaptiveScore: number; reason: string };
+export type AdaptiveSelection<T extends AdaptiveCandidate = AdaptiveCandidate> = T & { adaptiveScore: number; reason: string };
 
 export const defaultAdaptiveWeights: AdaptiveWeights = { weakTopic: 0.4, recentIncorrect: 0.2, suitableDifficulty: 0.2, spacedRetrieval: 0.1, unseen: 0.1 };
 const difficultyTarget: Record<string, number> = { foundation: 25, developing: 45, standard: 50, secure: 65, advanced: 82, stretch: 82, exam_challenge: 95 };
 
-export function selectAdaptiveQuestions({ candidates, topicMastery, history = [], count = 10, weights = defaultAdaptiveWeights, currentTopic }: { candidates: AdaptiveCandidate[]; topicMastery: Record<string, number>; history?: QuestionHistory[]; count?: number; weights?: AdaptiveWeights; currentTopic?: string }): AdaptiveSelection[] {
+export function selectAdaptiveQuestions<T extends AdaptiveCandidate>({ candidates, topicMastery, history = [], count = 10, weights = defaultAdaptiveWeights, currentTopic }: { candidates: T[]; topicMastery: Record<string, number>; history?: QuestionHistory[]; count?: number; weights?: AdaptiveWeights; currentTopic?: string }): AdaptiveSelection<T>[] {
   const historyMap = new Map(history.map((item) => [item.questionId, item]));
   return candidates.map((candidate) => {
     const mastery = topicMastery[candidate.topicSlug] ?? 0;

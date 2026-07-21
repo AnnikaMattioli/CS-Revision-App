@@ -43,7 +43,7 @@ export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adapti
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
       <section className="card p-6 sm:p-8">
         <h2 className="text-2xl font-black">Build your set</h2>
-        <p className="mt-2 text-muted">Choose a focus. Every set contains 10 original exam-style questions.</p>
+        <p className="mt-2 text-muted">Choose a focus. Every set contains 10 original exam-style questions, with at least eight written responses.</p>
         <div className="mt-7 grid gap-5 sm:grid-cols-3">
           <label className="text-sm font-extrabold">
             Topic
@@ -100,7 +100,7 @@ export function PracticeLauncher({ initialTopic = "mixed", initialMode = "adapti
       </section>
       <aside className="space-y-4">
         <InfoCard icon={<Target />} title="10 questions">A purposeful mix of recall, explanation and application.</InfoCard>
-        <InfoCard icon={<Shuffle />} title="Multiple formats">Choices, written answers, calculations, ordering and matching.</InfoCard>
+        <InfoCard icon={<Shuffle />} title="Written-question focus">Eight written responses plus no more than two choice or true/false questions.</InfoCard>
         <InfoCard icon={<Clock3 />} title="Autosaved">Refresh safely and continue the unfinished set.</InfoCard>
       </aside>
     </div>

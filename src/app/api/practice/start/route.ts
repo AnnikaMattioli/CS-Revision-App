@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/env";
 import { questionBankForCourse } from "@/lib/practice/question-bank";
+import { selectPracticeQuestionMix } from "@/lib/practice/practice-selection";
 import { selectAdaptiveQuestions, type QuestionHistory } from "@/lib/progress/adaptive";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -11,13 +12,13 @@ export async function POST(request: Request) {
   const limited = rateLimit(request, "practice-start", { limit: 60, windowMs: 60_000 }); if (limited) return limited;
   const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid settings." }, { status: 400 });
   const select = (courseId: string, mastery: Record<string, number>, history: QuestionHistory[] = []) => {
-    const candidates = questionBankForCourse(courseId).map(({ id, topicSlug, difficulty }) => ({ id, topicSlug, difficulty }));
+    const candidates = questionBankForCourse(courseId).map(({ id, topicSlug, difficulty, type }) => ({ id, topicSlug, difficulty, type }));
     const scopedCandidates = parsed.data.topic === "mixed" ? candidates : candidates.filter((candidate) => candidate.topicSlug === parsed.data.topic);
-    const chosen = selectAdaptiveQuestions({ candidates: scopedCandidates, topicMastery: mastery, history, count: 10, currentTopic: parsed.data.topic === "mixed" ? undefined : parsed.data.topic });
-    let ordered: Array<{ id: string; topicSlug: string; difficulty: string }> = parsed.data.mode === "all" ? scopedCandidates.slice(0, 10) : parsed.data.mode === "unseen" ? [...chosen].sort((a, b) => (history.find((item) => item.questionId === a.id)?.seenCount ?? 0) - (history.find((item) => item.questionId === b.id)?.seenCount ?? 0)) : chosen;
+    const chosen = selectAdaptiveQuestions({ candidates: scopedCandidates, topicMastery: mastery, history, count: scopedCandidates.length, currentTopic: parsed.data.topic === "mixed" ? undefined : parsed.data.topic });
+    let ordered: Array<{ id: string; topicSlug: string; difficulty: string; type: string }> = parsed.data.mode === "all" ? scopedCandidates : parsed.data.mode === "unseen" ? [...chosen].sort((a, b) => (history.find((item) => item.questionId === a.id)?.seenCount ?? 0) - (history.find((item) => item.questionId === b.id)?.seenCount ?? 0)) : chosen;
     if (parsed.data.difficulty !== "mixed") ordered = [...ordered].sort((a, b) => Number(b.difficulty === parsed.data.difficulty) - Number(a.difficulty === parsed.data.difficulty));
     if (parsed.data.topic !== "mixed") ordered = [...ordered].sort((a, b) => Number(b.topicSlug === parsed.data.topic) - Number(a.topicSlug === parsed.data.topic));
-    return ordered.map((item) => item.id);
+    return selectPracticeQuestionMix(ordered, 10).map((item) => item.id);
   };
   const ocrCourseId = "10000000-0000-0000-0000-000000000001";
   if (!hasSupabaseConfig()) return NextResponse.json({ attemptId: `demo-${Date.now()}`, questionIds: select(ocrCourseId, {}) });
