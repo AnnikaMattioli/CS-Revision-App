@@ -10,6 +10,7 @@ describe("AQA GCSE course", () => {
     for (const topic of aqaGcseCourse.topics) {
       expect(topic.lessons).toHaveLength(4);
       expect(topic.lessons.every((lesson) => lesson.sections.length === 5)).toBe(true);
+      expect(topic.lessons.every((lesson) => lesson.sections.every((section) => section.body.length >= 3))).toBe(true);
       expect(topic.flashcards).toHaveLength(20);
       expect(topic.workedSolutions).toHaveLength(5);
     }

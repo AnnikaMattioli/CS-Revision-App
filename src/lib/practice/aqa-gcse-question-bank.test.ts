@@ -14,4 +14,11 @@ describe("AQA GCSE question bank", () => {
   it("links every question back to its Learn lesson", () => {
     expect(aqaGcseQuestionBank.every((question) => question.lessonHref?.startsWith(`/learn/${question.topicSlug}/`))).toBe(true);
   });
+  it("provides twenty written questions with developed model answers per topic", () => {
+    for (const topic of aqaGcseCourse.topics) {
+      const written = aqaGcseQuestionBank.filter((question) => question.topicSlug === topic.slug && question.type === "short_answer");
+      expect(written).toHaveLength(20);
+      expect(written.every((question) => (question.modelAnswer?.split(/(?<=[.!?])\s+/).length ?? 0) >= 2)).toBe(true);
+    }
+  });
 });
