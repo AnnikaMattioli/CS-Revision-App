@@ -7,7 +7,7 @@ export const aqaALevelBlueprints: OcrTopicBlueprint[] = [
   {
     code: "4.1", slug: "fundamentals-of-programming", title: "Fundamentals of programming", icon: "💻", description: "Data, control flow, modular programming, recursion and object-oriented design.", units: [
       unit("data-control", "Data and control", "Use types, variables and control structures precisely.", [
-        "What is a data type?~A classification that determines a value's representation, permitted range and valid operations.~classification,representation,operations",
+        "Which data types does AQA A-level require?~Integer, real or float, Boolean, character, string, date/time, pointer or reference, records and arrays each define a representation, range and valid operations.~integer,date/time,pointer,records",
         "How do definite and indefinite iteration differ?~Definite iteration repeats a known number of times; indefinite iteration is controlled by a condition.~known,condition,iteration",
         "What is selection?~Selection chooses which statement block executes according to one or more Boolean conditions.~chooses,Boolean,block",
         "Why use meaningful identifiers?~They communicate purpose, reduce misunderstanding and make programs easier to maintain.~purpose,maintain,readability",
@@ -32,7 +32,7 @@ export const aqaALevelBlueprints: OcrTopicBlueprint[] = [
         "What characterises procedural programming?~Procedures contain ordered commands that operate on data and are called to perform tasks.~procedures,commands,data",
         "What is the difference between a class and an object?~A class defines attributes and methods; an object is a particular instance with state.~defines,instance,state",
         "What is encapsulation?~It combines state with its methods and controls direct access to internal representation.~state,methods,access",
-        "What are inheritance and polymorphism?~Inheritance derives specialised classes; polymorphism lets a shared interface invoke type-specific behaviour.~derives,interface,behaviour",
+        "How do inheritance, aggregation, composition, polymorphism and overriding differ?~Inheritance derives a specialised class, aggregation links an independently existing part, composition owns a lifetime-dependent part, polymorphism uses a shared interface, and overriding replaces inherited behaviour.~inheritance,aggregation,composition,overriding",
       ]),
     ],
   },
@@ -49,7 +49,7 @@ export const aqaALevelBlueprints: OcrTopicBlueprint[] = [
         "What defines a queue?~A queue is first-in first-out, using enqueue at the rear and dequeue at the front.~FIFO,enqueue,dequeue",
         "What defines a stack?~A stack is last-in first-out, using push, pop and peek at its top.~LIFO,push,pop",
         "How can an array implement a circular queue?~Front and rear indices wrap around the array so freed positions are reused.~indices,wrap,reused",
-        "What is a vector?~A vector is a dynamic indexed collection that can resize as elements are added or removed.~dynamic,indexed,resize",
+        "What is an AQA mathematical vector?~A vector is an ordered list of values from one field and can be added, scaled, combined convexly and used in a dot product.~ordered,field,scaled,dot product",
         "What is stack underflow?~An attempt is made to pop or inspect an item when the stack is empty.~pop,empty,error",
       ]),
       unit("graphs-trees", "Graphs and trees", "Represent relationships and hierarchical structures.", [
@@ -62,7 +62,7 @@ export const aqaALevelBlueprints: OcrTopicBlueprint[] = [
       unit("hash-dictionary", "Hash tables and dictionaries", "Map keys to values and resolve collisions.", [
         "What does a hash function do?~It deterministically maps a key to an array index or bucket.~maps,key,index",
         "What is a hash collision?~Different keys produce the same hash location and require a resolution strategy.~different,same,resolution",
-        "How does chaining resolve collisions?~Each bucket stores a collection of entries whose keys hash to that bucket.~bucket,collection,keys",
+        "How does rehashing resolve collisions?~A second calculation or probing rule generates alternative locations until a permitted empty slot is found.~second,probing,empty",
         "What is a dictionary?~An abstract data type that stores key-value pairs and supports lookup, insertion and deletion by key.~key-value,lookup,deletion",
         "Why does hash-table performance depend on load factor?~Crowded tables produce more collisions, increasing average lookup and insertion work.~crowded,collisions,lookup",
       ]),
@@ -110,7 +110,7 @@ export const aqaALevelBlueprints: OcrTopicBlueprint[] = [
         "What is automation?~Using a machine-executable model or algorithm to perform a process with limited human intervention.~executable,process,intervention",
       ]),
       unit("regular-context-free", "Formal languages", "Use FSMs, regular expressions and BNF.", [
-        "What is a finite-state machine?~A model with finite states and input-labelled transitions, optionally producing output.~states,transitions,input",
+        "How do sets support formal language reasoning?~Membership, subset, union, intersection, difference and Cartesian product describe collections of symbols, states and ordered pairs precisely.~membership,union,intersection,Cartesian",
         "What language does a finite-state automaton accept?~The set of strings that take it from its start state to an accepting state.~strings,start,accepting",
         "What does a regular expression describe?~A regular language using symbols, alternatives, concatenation and repetition operators.~language,alternatives,repetition",
         "What is Backus-Naur Form?~A notation of production rules that defines the syntax of a context-free language.~production,syntax,context-free",
@@ -157,10 +157,10 @@ export const aqaALevelBlueprints: OcrTopicBlueprint[] = [
       ]),
       unit("multimedia-security", "Multimedia, compression and encryption", "Represent images and sound and protect transferred data.", [
         "How do bitmap and vector graphics differ?~Bitmaps store coloured pixels; vectors store geometric objects and transformations.~pixels,geometric,objects",
-        "What determines bitmap file size?~Pixel count and colour depth determine uncompressed image data size.~pixels,colour depth,size",
-        "How is analogue sound digitised?~Amplitude is sampled at regular intervals and each sample is quantised into a binary value.~amplitude,sampled,quantised",
+        "How do bitmap and vector graphics differ and what determines bitmap size?~Bitmaps store pixels and use width times height times colour depth bits, while vectors store geometric objects that scale without pixelation.~pixels,colour depth,geometric,scale",
+        "How are analogue sound and MIDI represented?~ADC samples and quantises amplitude into binary values, while MIDI stores event messages such as note, instrument, duration and velocity rather than a waveform.~ADC,samples,MIDI,events",
         "How do lossy and lossless compression differ?~Lossy removes information permanently; lossless reconstructs the original exactly.~removes,reconstructs,exactly",
-        "How do symmetric and asymmetric encryption differ?~Symmetric uses a shared secret key; asymmetric uses related public and private keys.~shared,public,private",
+        "How do Caesar, Vernam and modern key systems differ?~Caesar shifts characters and is easily cracked; Vernam XORs a message with a random one-use equal-length key for perfect secrecy; practical systems use symmetric shared keys or asymmetric public/private pairs.~Caesar,Vernam,one-use,asymmetric",
       ]),
     ],
   },
