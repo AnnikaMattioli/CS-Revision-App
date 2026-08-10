@@ -12,4 +12,14 @@ describe("OCR A-level question bank", () => {
     expect(ocrALevelQuestionBank.every((question) => ["exact", "boolean", "rubric"].includes(question.rule.kind))).toBe(true);
     expect(ocrALevelQuestionBank.every((question) => question.lessonHref?.startsWith(`/learn/${question.topicSlug}/`))).toBe(true);
   });
+  it("balances objective questions with 20 written questions and developed models per topic", () => {
+    for (const topic of ocrALevelCourse.topics) {
+      const questions = ocrALevelQuestionBank.filter((question) => question.topicSlug === topic.slug);
+      expect(questions.filter((question) => question.type === "multiple_choice")).toHaveLength(20);
+      expect(questions.filter((question) => question.type === "boolean")).toHaveLength(10);
+      const written = questions.filter((question) => question.type === "short_answer");
+      expect(written).toHaveLength(20);
+      expect(written.every((question) => (question.modelAnswer?.length ?? 0) > (question.correctAnswer?.length ?? 0))).toBe(true);
+    }
+  });
 });

@@ -12,6 +12,16 @@ describe("OCR A-level course", () => {
       expect(topic.lessons.every((lesson) => lesson.sections.length === 5)).toBe(true);
       expect(topic.flashcards).toHaveLength(20);
       expect(topic.workedSolutions).toHaveLength(5);
+      expect(topic.lessons.every((lesson) => lesson.sections.every((section) => section.body.length === 3))).toBe(true);
+    }
+  });
+  it("adds an OCR-focused worked example, misconception, exam technique and retrieval task to every lesson", () => {
+    for (const topic of ocrALevelCourse.topics) for (const lesson of topic.lessons) {
+      const text = lesson.sections.flatMap((section) => section.body).join(" ");
+      expect(text).toContain("Worked example:");
+      expect(text).toContain("Common misconception:");
+      expect(text).toContain("OCR exam technique:");
+      expect(text).toContain("Retrieval challenge:");
     }
   });
   it("uses unique identifiers and solution slugs", () => {
