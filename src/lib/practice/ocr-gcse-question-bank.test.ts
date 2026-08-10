@@ -21,4 +21,13 @@ describe("OCR GCSE question bank", () => {
     const types = new Set(ocrGcseQuestionBank.map((question) => question.type));
     expect(types).toEqual(new Set(["multiple_choice", "boolean", "short_answer"]));
   });
+
+  it("provides twenty written questions and developed models per topic", () => {
+    const byTopic = Map.groupBy(ocrGcseQuestionBank, (question) => question.topicSlug);
+    for (const questions of byTopic.values()) {
+      const written = questions.filter((question) => question.type === "short_answer");
+      expect(written).toHaveLength(20);
+      expect(written.every((question) => (question.modelAnswer?.split(/(?<=[.!?])\s+/).length ?? 0) >= 2)).toBe(true);
+    }
+  });
 });

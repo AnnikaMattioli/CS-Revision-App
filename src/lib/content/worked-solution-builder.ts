@@ -7,6 +7,7 @@ type Options = {
   topicIndex: number;
   solutionIndex: number;
   qualification: "GCSE" | "A Level";
+  developAnswer?: (answer: string, factIndex: number) => string;
 };
 
 export function workedSolutionMarks(topicIndex: number, solutionIndex: number, qualification: Options["qualification"]) {
@@ -15,12 +16,15 @@ export function workedSolutionMarks(topicIndex: number, solutionIndex: number, q
   return ((topicIndex - 1 + solutionIndex * stride) % maximum) + 1;
 }
 
-export function buildWorkedSolution({ id, blueprint, topicIndex, solutionIndex, qualification }: Options): WorkedSolution {
+export function buildWorkedSolution({ id, blueprint, topicIndex, solutionIndex, qualification, developAnswer }: Options): WorkedSolution {
   const facts = blueprint.units.flatMap((unit) => unit.facts);
   const marks = workedSolutionMarks(topicIndex, solutionIndex, qualification);
   const start = (solutionIndex * 4) % facts.length;
-  const selected = Array.from({ length: marks }, (_, offset) => facts[(start + offset) % facts.length]);
-  const keywords = [...new Set(selected.flatMap((item) => item.keywords))].slice(0, 8);
+  const selected = Array.from({ length: marks }, (_, offset) => {
+    const factIndex = (start + offset) % facts.length;
+    return { item: facts[factIndex], factIndex };
+  });
+  const keywords = [...new Set(selected.flatMap(({ item }) => item.keywords))].slice(0, 8);
 
   return {
     id,
@@ -28,16 +32,16 @@ export function buildWorkedSolution({ id, blueprint, topicIndex, solutionIndex, 
     title: `${marks}-mark worked response ${solutionIndex + 1}`,
     marks,
     prompt: marks === 1
-      ? `${selected[0].question} [1 mark]`
+      ? `${selected[0].item.question} [1 mark]`
       : `Explain the key ideas in ${blueprint.title}, including ${keywords.join(", ")}. [${marks} marks]`,
     topicSlug: blueprint.slug,
     topicTitle: blueprint.title,
     steps: [
-      { title: "Decode the command", explanation: `The command is “explain”, so the response needs ${marks} precise, relevant ${marks === 1 ? "sentence" : "sentences"} rather than disconnected keywords.`, working: selected.map((item) => item.question).join("\n") },
+      { title: "Decode the command", explanation: `The command is “explain”, so the response needs ${marks} precise, relevant ${marks === 1 ? "sentence" : "sentences"} rather than disconnected keywords.`, working: selected.map(({ item }) => item.question).join("\n") },
       { title: "Plan the marking points", explanation: `Build one developed sentence for each available mark. Use the ideas ${keywords.join(", ")} accurately.` },
       { title: "Write the model response", explanation: `Write exactly ${marks} complete ${marks === 1 ? "sentence" : "sentences"}; each sentence should add a distinct accurate fact, explanation, comparison or consequence.` },
     ],
-    finalAnswer: selected.map((item) => sentence(item.answer)).join(" "),
+    finalAnswer: selected.map(({ item, factIndex }) => sentence(developAnswer?.(item.answer, factIndex) ?? item.answer)).join(" "),
   };
 }
 

@@ -44,7 +44,7 @@ export async function getActiveCourseContent(): Promise<CourseContent> {
       const { data: sectionRows } = await supabase.from("lesson_sections").select("*").eq("lesson_id", lesson.id).order("sort_order");
       return {
         id: lesson.id, slug: lesson.slug, title: lesson.title, summary: lesson.summary, estimatedMinutes: lesson.estimated_minutes,
-        sections: (sectionRows ?? []).map((item) => ({ id: item.id, heading: item.heading, body: item.body.paragraphs ?? [], callout: item.body.callout })),
+        sections: (sectionRows ?? []).map((item) => ({ id: item.id, heading: item.heading, body: item.body.paragraphs ?? [], callout: item.body.callout, code: item.body.code })),
       };
     }));
 

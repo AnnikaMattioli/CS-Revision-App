@@ -40,6 +40,7 @@ export default async function LessonPage({ params }: { params: Params }) {
           return <section key={section.id} className="card p-6 sm:p-8">
             <h2 className="text-2xl font-black">{section.heading}</h2>
             <div className="mt-4 space-y-4">{section.body.map((paragraph) => <p key={paragraph} className="text-[1.04rem] leading-8 text-muted">{paragraph}</p>)}</div>
+            {section.code ? <pre className="mt-5 overflow-x-auto rounded-2xl bg-[#171425] p-5 text-sm leading-6 text-[#f6f2ff]"><code>{section.code}</code></pre> : null}
             {section.callout ? (() => {
               const Icon = calloutIcons[section.callout.type];
               return <aside className="mt-6 flex gap-3 rounded-2xl border bg-[var(--surface-soft)] p-4"><Icon className="mt-0.5 shrink-0 text-[var(--violet)]" size={20} /><div><p className="font-black">{section.callout.title}</p><p className="mt-1 leading-6 text-muted">{section.callout.text}</p></div></aside>;

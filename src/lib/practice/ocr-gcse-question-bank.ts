@@ -1,4 +1,5 @@
 import { ocrGcseBlueprints, type OcrFact } from "@/data/ocr-gcse";
+import { getOcrGcseEnrichment } from "@/data/ocr-gcse-enrichment";
 import type { PracticeDifficulty, ProtectedQuestion } from "@/types/practice";
 
 const difficulties: PracticeDifficulty[] = ["foundation", "developing", "secure", "advanced", "exam_challenge"];
@@ -17,7 +18,11 @@ function distractors(facts: OcrFact[], index: number) {
 
 export const ocrGcseQuestionBank: ProtectedQuestion[] = ocrGcseBlueprints.flatMap((topic, topicOffset) => {
   const topicIndex = topicOffset + 1;
-  const facts = topic.units.flatMap((unit) => unit.facts.map((item) => ({ ...item, lessonSlug: unit.slug })));
+  const facts = topic.units.flatMap((unit) => unit.facts.map((item) => ({
+    ...item,
+    lessonSlug: unit.slug,
+    enrichment: getOcrGcseEnrichment(unit.slug),
+  })));
   const multipleChoice: ProtectedQuestion[] = facts.map((item, index) => ({
     id: questionId(topicIndex, index + 1), topicSlug: topic.slug, topicTitle: topic.title,
     type: "multiple_choice", difficulty: difficulties[index % difficulties.length], marks: 1, estimatedSeconds: 50,
@@ -30,9 +35,10 @@ export const ocrGcseQuestionBank: ProtectedQuestion[] = ocrGcseBlueprints.flatMa
     explanation: item.answer, commonMistake: "Check that the option answers the exact command word and does not merely mention the same topic.",
     lessonHref: lessonHref(topic.slug, item.lessonSlug),
   }));
-  const booleans: ProtectedQuestion[] = facts.map((item, index) => {
+  const booleans: ProtectedQuestion[] = facts.filter((_, index) => index % 2 === 0).map((item, index) => {
     const correct = index % 2 === 0;
-    const statement = correct ? item.answer : facts[(index + 1) % facts.length].answer;
+    const originalIndex = index * 2;
+    const statement = correct ? item.answer : facts[(originalIndex + 1) % facts.length].answer;
     return {
       id: questionId(topicIndex, 21 + index), topicSlug: topic.slug, topicTitle: topic.title,
       type: "boolean", difficulty: difficulties[(index + 1) % difficulties.length], marks: 1, estimatedSeconds: 40,
@@ -43,17 +49,18 @@ export const ocrGcseQuestionBank: ProtectedQuestion[] = ocrGcseBlueprints.flatMa
       lessonHref: lessonHref(topic.slug, item.lessonSlug),
     };
   });
-  const shortAnswers: ProtectedQuestion[] = facts.slice(0, 10).map((item, index) => {
-    const points = item.keywords.slice(0, 3).map((keyword, pointIndex) => ({
+  const shortAnswers: ProtectedQuestion[] = facts.map((item, index) => {
+    const points = item.keywords.slice(0, 4).map((keyword, pointIndex) => ({
       id: `point-${pointIndex + 1}`, description: `Uses the idea “${keyword}” accurately`, patterns: [keyword.toLowerCase()],
     }));
     return {
-      id: questionId(topicIndex, 41 + index), topicSlug: topic.slug, topicTitle: topic.title,
+      id: questionId(topicIndex, 31 + index), topicSlug: topic.slug, topicTitle: topic.title,
       type: "short_answer", difficulty: difficulties[(index + 2) % difficulties.length], marks: points.length, estimatedSeconds: 120,
       prompt: `${item.question} Give a developed exam-style answer. [${points.length} marks]`,
-      rule: { kind: "rubric", points }, correctAnswer: item.answer, modelAnswer: item.answer,
-      explanation: `A complete response uses the key ideas ${item.keywords.join(", ")}.`,
-      commonMistake: "Do not list disconnected terms: make each technical idea part of a clear answer.",
+      rule: { kind: "rubric", points }, correctAnswer: item.answer,
+      modelAnswer: `${item.answer} ${item.enrichment.workedExample}`,
+      explanation: `A complete response uses ${item.keywords.join(", ")} accurately, then develops the idea with a relevant example, reason or consequence.`,
+      commonMistake: item.enrichment.misconception,
       lessonHref: lessonHref(topic.slug, item.lessonSlug),
     };
   });

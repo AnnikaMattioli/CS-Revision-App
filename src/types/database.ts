@@ -77,7 +77,7 @@ export type Database = {
         Insert: { subtopic_id: string; slug: string; title: string; summary?: string; estimated_minutes?: number; sort_order?: number; status?: "draft" | "published" | "archived" }; Update: { title?: string; summary?: string; estimated_minutes?: number; sort_order?: number; status?: "draft" | "published" | "archived" }; Relationships: [];
       };
       lesson_sections: {
-        Row: { id: string; lesson_id: string; heading: string; body: { paragraphs?: string[]; callout?: { type: "definition" | "tip" | "warning"; title: string; text: string } }; sort_order: number };
+        Row: { id: string; lesson_id: string; heading: string; body: { paragraphs?: string[]; callout?: { type: "definition" | "tip" | "warning"; title: string; text: string }; code?: string }; sort_order: number };
         Insert: { lesson_id: string; heading: string; body?: unknown; sort_order?: number }; Update: { heading?: string; body?: unknown; sort_order?: number }; Relationships: [];
       };
       flashcards: {

@@ -1,4 +1,5 @@
 import { ocrGcseBlueprints } from "@/data/ocr-gcse";
+import { getOcrGcseEnrichment } from "@/data/ocr-gcse-enrichment";
 import { buildWorkedSolution } from "@/lib/content/worked-solution-builder";
 import type { CourseContent, LessonSection } from "@/types/content";
 
@@ -8,17 +9,28 @@ function uuid(group: number, topic: number, item: number) {
   return `${group.toString().padStart(8, "0")}-0000-4000-8000-${String(topic * 1000 + item).padStart(12, "0")}`;
 }
 
-function lessonSection(topicIndex: number, unitIndex: number, factIndex: number, question: string, answer: string, keywords: string[]): LessonSection {
+function lessonSection(topicIndex: number, unitIndex: number, factIndex: number, question: string, answer: string, keywords: string[], unitSlug: string, unitSummary: string): LessonSection {
   const focus = question.replace(/\?$/, "").replace(/^(What|Why|How|When|Which|Give|State|Compare)\s+/i, "");
+  const enrichment = getOcrGcseEnrichment(unitSlug);
+  const enrichmentText = [
+    `Big picture: ${unitSummary}`,
+    `Worked example: ${enrichment.workedExample}`,
+    `Common misconception: ${enrichment.misconception}`,
+    `Exam technique: ${enrichment.examTip}`,
+    `Retrieval challenge: explain ${focus.toLowerCase()} without looking, then add a specific example or consequence.`,
+  ][factIndex - 1];
   return {
     id: uuid(34, topicIndex, unitIndex * 10 + factIndex),
     heading: question,
-    body: [answer, `For an exam answer about ${focus.toLowerCase()}, use precise subject vocabulary and connect each point to its effect. A strong response should include ${keywords.map((keyword) => `“${keyword}”`).join(", ")}.`],
-    callout: factIndex === 0
-      ? { type: "tip", title: "Active recall", text: "Hide the explanation, answer the heading aloud, then check every highlighted idea." }
+    body: [answer, enrichmentText, `For an exam answer about ${focus.toLowerCase()}, use ${keywords.map((keyword) => `“${keyword}”`).join(", ")} accurately and connect each point to its effect.`],
+    callout: factIndex === 3
+      ? { type: "warning", title: "Correct it", text: "Before moving on, rewrite the misconception above as a precise true statement from memory." }
       : factIndex === 4
-        ? { type: "warning", title: "Exam check", text: "Avoid a one-word answer when the command word asks you to explain or compare." }
-        : undefined,
+        ? { type: "tip", title: "Mark your answer", text: `Answer the heading now and award yourself one mark for each accurate use of ${keywords.join(", ")}.` }
+        : factIndex === 5
+          ? { type: "definition", title: "Active recall", text: "Close the lesson and teach this idea aloud. Reopen it only to identify the exact missing term or link." }
+          : undefined,
+    code: factIndex === 2 ? enrichment.code : undefined,
   };
 }
 
@@ -34,10 +46,18 @@ export const ocrGcseCourse: CourseContent = {
       subtopicTitle: topic.units[0].title,
       lessons: topic.units.map((unit, unitOffset) => ({
         id: uuid(30, topicIndex, unitOffset + 1), slug: unit.slug, title: unit.title, summary: unit.summary, estimatedMinutes: 12,
-        sections: unit.facts.map((item, factOffset) => lessonSection(topicIndex, unitOffset + 1, factOffset + 1, item.question, item.answer, item.keywords)),
+        sections: unit.facts.map((item, factOffset) => lessonSection(topicIndex, unitOffset + 1, factOffset + 1, item.question, item.answer, item.keywords, unit.slug, unit.summary)),
       })),
       flashcards: facts.map((item, factOffset) => ({ id: uuid(40, topicIndex, factOffset + 1), front: item.question, back: item.answer, hint: `Include: ${item.keywords.join(", ")}` })),
-      workedSolutions: Array.from({ length: 5 }, (_, solutionIndex) => buildWorkedSolution({ id: uuid(50, topicIndex, solutionIndex + 1), blueprint: topic, topicIndex, solutionIndex, qualification: "GCSE" })),
+      workedSolutions: Array.from({ length: 5 }, (_, solutionIndex) => buildWorkedSolution({
+        id: uuid(50, topicIndex, solutionIndex + 1), blueprint: topic, topicIndex, solutionIndex, qualification: "GCSE",
+        developAnswer: (answer, factIndex) => {
+          if (factIndex % 5 !== 0) return answer;
+          const unit = topic.units[Math.floor(factIndex / 5)];
+          const detail = getOcrGcseEnrichment(unit.slug).workedExample.replace(/[.!?]+$/, "");
+          return `${answer.replace(/[.!?]+$/, "")}; for example, ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`;
+        },
+      })),
     };
   }),
 };

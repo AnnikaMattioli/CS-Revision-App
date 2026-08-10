@@ -10,6 +10,7 @@ describe("complete OCR GCSE course content", () => {
       expect(topic.workedSolutions.length).toBeGreaterThanOrEqual(5);
       expect(topic.learningObjectives.length).toBeGreaterThanOrEqual(4);
       expect(topic.lessons.every((lesson) => lesson.sections.length >= 5)).toBe(true);
+      expect(topic.lessons.every((lesson) => lesson.sections.every((section) => section.body.length >= 3))).toBe(true);
     }
   });
 
