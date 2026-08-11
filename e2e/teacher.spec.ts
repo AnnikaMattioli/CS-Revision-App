@@ -49,8 +49,13 @@ test("teacher assigns work and reviews privacy-safe progress", async ({ page }) 
 test("teacher can rotate access and remove a class member", async ({ page }) => {
   await useTeacherProfile(page);
   await page.goto("/classes/demo-class-1");
-  await page.getByRole("button", { name: "Rotate code" }).click();
+  const rotate = page.getByRole("button", { name: "Rotate code" });
+  await rotate.scrollIntoViewIfNeeded();
+  await expect(rotate).toBeVisible();
+  await rotate.click();
   await expect(page.getByText("FRESH7")).toBeVisible();
-  await page.getByRole("button", { name: "Remove Noor A." }).click();
+  const remove = page.getByRole("button", { name: "Remove Noor A." });
+  await remove.scrollIntoViewIfNeeded();
+  await remove.click();
   await expect(page.getByRole("button", { name: "Remove Noor A." })).toHaveCount(0);
 });
