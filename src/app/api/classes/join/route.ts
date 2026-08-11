@@ -17,7 +17,10 @@ export async function POST(request: Request) {
   if (!studentRole) return NextResponse.json({ error: "Only student accounts can join a class." }, { status: 403 });
   const { data: matches, error } = await supabase.rpc("join_class_by_hash", { requested_hash: hashClassCode(parsed.data.code) });
   if (error?.message.includes("teacher_active_student_limit_reached")) return NextResponse.json({ error: "This teacher’s current plan has reached its active-student limit. Ask your teacher what to do next.", code: "resource_limit_reached" }, { status: 409 });
-  if (error) return NextResponse.json({ error: genericError }, { status: 404 });
+  if (error) {
+    console.error("Class join failed", error);
+    return NextResponse.json({ error: genericError }, { status: 404 });
+  }
   const found = matches?.[0];
   if (!found) return NextResponse.json({ error: genericError }, { status: 404 });
   return NextResponse.json({ classId: found.class_id, className: found.class_name }, { headers: { "cache-control": "private, no-store" } });

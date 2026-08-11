@@ -24,6 +24,9 @@ export async function POST(request: Request) {
   const { data: enrolment } = await actor.supabase.from("user_course_enrolments").select("course_id").eq("user_id", actor.userId).eq("is_active", true).maybeSingle();
   if (!enrolment) return NextResponse.json({ error: "Choose the course you teach in account setup before creating a class." }, { status: 400 });
   const { data, error } = await actor.supabase.from("classes").insert({ teacher_id: actor.userId, course_id: enrolment.course_id, name: parsed.data.name, join_code_hash: hashClassCode(code), join_code_hint: classCodeHint(code) }).select("id,name,join_code_hint").single();
-  if (error || !data) return NextResponse.json({ error: "The class could not be created." }, { status: 500 });
+  if (error || !data) {
+    console.error("Class creation failed", error);
+    return NextResponse.json({ error: "The class could not be created." }, { status: 500 });
+  }
   return NextResponse.json({ class: data, joinCode: code }, { status: 201, headers: { "cache-control": "private, no-store" } });
 }

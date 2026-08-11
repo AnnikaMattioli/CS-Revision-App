@@ -11,6 +11,7 @@
     "test": "node scripts/run-unit-tests.mjs",
     "test:watch": "node ./node_modules/vitest/vitest.mjs",
     "test:e2e": "node ./node_modules/@playwright/test/cli.js test",
+    "test:e2e:supabase": "E2E_REAL_SUPABASE=true node ./node_modules/@playwright/test/cli.js test",
     "sync:ocr-gcse": "node scripts/sync-ocr-gcse.mjs",
     "sync:aqa-gcse": "node scripts/sync-ocr-gcse.mjs aqa",
     "sync:ocr-a-level": "node scripts/sync-ocr-gcse.mjs ocr-a-level",

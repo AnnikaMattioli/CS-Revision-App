@@ -5,18 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseConfig } from "@/lib/env";
+import { courseChoices, findCourseChoice, type CourseBoard as Board, type CourseQualification as Qualification } from "@/lib/content/course-catalog";
 import { cn } from "@/lib/utils";
 
-const courses = [
-  { id: "10000000-0000-0000-0000-000000000001", qualification: "GCSE", board: "OCR" },
-  { id: "10000000-0000-0000-0000-000000000002", qualification: "GCSE", board: "AQA" },
-  { id: "10000000-0000-0000-0000-000000000003", qualification: "A-level", board: "OCR" },
-  { id: "10000000-0000-0000-0000-000000000004", qualification: "A-level", board: "AQA" },
-] as const;
-
 type Role = "student" | "teacher";
-type Qualification = "GCSE" | "A-level";
-type Board = "OCR" | "AQA";
 
 const choiceClass = (selected: boolean) => cn(
   "relative min-h-28 rounded-2xl border-2 p-5 text-left transition hover:-translate-y-0.5",
@@ -30,7 +22,7 @@ export function CoursePicker({ onboarding = false }: { onboarding?: boolean }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
   const router = useRouter();
-  const selected = courses.find((course) => course.qualification === qualification && course.board === board)!;
+  const selected = findCourseChoice(qualification, board) ?? courseChoices[0];
 
   async function save() {
     setSaving(true);

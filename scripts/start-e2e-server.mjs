@@ -17,7 +17,9 @@ await cp(source, target, {
 await symlink(join(source, "node_modules"), join(target, "node_modules"), "dir");
 
 const nextCli = join(target, "node_modules/next/dist/bin/next");
-const environment = { ...process.env, NEXT_PUBLIC_DEMO_MODE: "true" };
+const realSupabase = process.env.E2E_REAL_SUPABASE === "true";
+const port = process.env.E2E_PORT ?? (realSupabase ? "3200" : "3100");
+const environment = { ...process.env, NEXT_PUBLIC_DEMO_MODE: realSupabase ? "false" : "true" };
 const build = spawn(process.execPath, [nextCli, "build", "--webpack"], {
   cwd: target,
   env: environment,
@@ -26,7 +28,7 @@ const build = spawn(process.execPath, [nextCli, "build", "--webpack"], {
 const buildCode = await new Promise((resolveCode) => build.on("exit", resolveCode));
 if (buildCode !== 0) process.exit(Number(buildCode ?? 1));
 
-const server = spawn(process.execPath, [nextCli, "start", "--hostname", "127.0.0.1", "--port", "3100"], {
+const server = spawn(process.execPath, [nextCli, "start", "--hostname", "127.0.0.1", "--port", port], {
   cwd: target,
   env: environment,
   stdio: "inherit",
