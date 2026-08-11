@@ -192,6 +192,41 @@ export type Database = {
         Row: { id: string; question_id: string | null; reporter_id: string; category: string; details: string; status: "open" | "reviewing" | "resolved" | "dismissed"; internal_notes: string | null; resolved_by: string | null; created_at: string; updated_at: string };
         Insert: { question_id?: string | null; reporter_id: string; category: string; details: string }; Update: { status?: "open" | "reviewing" | "resolved" | "dismissed"; internal_notes?: string | null; resolved_by?: string | null }; Relationships: [];
       };
+      subscriptions: {
+        Row: { id: string; user_id: string; plan_id: string; account_type: "student" | "teacher"; provider: string; provider_customer_id: string | null; provider_subscription_id: string | null; provider_price_id: string | null; provider_product_id: string | null; status: string; billing_interval: "free" | "month" | "year"; current_period_start: string | null; current_period_end: string | null; cancel_at_period_end: boolean; canceled_at: string | null; trial_start: string | null; trial_end: string | null; ended_at: string | null; latest_provider_event_id: string | null; created_at: string; updated_at: string };
+        Insert: { user_id: string; plan_id: string; account_type: "student" | "teacher"; provider?: string; provider_customer_id?: string | null; provider_subscription_id?: string | null; provider_price_id?: string | null; provider_product_id?: string | null; status: string; billing_interval: "free" | "month" | "year"; current_period_start?: string | null; current_period_end?: string | null; cancel_at_period_end?: boolean; canceled_at?: string | null; trial_start?: string | null; trial_end?: string | null; ended_at?: string | null; latest_provider_event_id?: string | null };
+        Update: Partial<Database["public"]["Tables"]["subscriptions"]["Insert"]>; Relationships: [];
+      };
+      billing_customers: {
+        Row: { id:string; user_id:string; stripe_customer_id:string; email_snapshot:string|null; created_at:string; updated_at:string };
+        Insert: { user_id:string; stripe_customer_id:string; email_snapshot?:string|null };
+        Update: { email_snapshot?:string|null }; Relationships: [];
+      };
+      stripe_events: {
+        Row: { stripe_event_id:string; event_type:string; processing_status:"processing"|"processed"|"failed"|"ignored"; attempts:number; error_summary:string|null; received_at:string; processed_at:string|null };
+        Insert: { stripe_event_id:string; event_type:string; processing_status?:"processing"|"processed"|"failed"|"ignored"; attempts?:number; error_summary?:string|null; processed_at?:string|null };
+        Update: { processing_status?:"processing"|"processed"|"failed"|"ignored"; attempts?:number; error_summary?:string|null; processed_at?:string|null }; Relationships: [];
+      };
+      plan_entitlements: {
+        Row: { plan_id: string; entitlement_key: string; enabled: boolean; limit_value: number | null; created_at: string; updated_at: string };
+        Insert: { plan_id: string; entitlement_key: string; enabled?: boolean; limit_value?: number | null };
+        Update: { enabled?: boolean; limit_value?: number | null }; Relationships: [];
+      };
+      usage_records: {
+        Row: { id: string; user_id: string; feature_key: string; period_start: string; period_end: string; quantity: number; last_used_at: string | null; created_at: string; updated_at: string };
+        Insert: { user_id: string; feature_key: string; period_start: string; period_end: string; quantity?: number; last_used_at?: string | null };
+        Update: { period_end?: string; quantity?: number; last_used_at?: string | null }; Relationships: [];
+      };
+      complimentary_access: {
+        Row: { id: string; user_id: string; plan_id: string | null; entitlement_key: string | null; reason: string; granted_by: string; starts_at: string; expires_at: string | null; revoked_at: string | null; revoked_by: string | null; metadata: Record<string, unknown>; created_at: string; updated_at: string };
+        Insert: { user_id: string; plan_id?: string | null; entitlement_key?: string | null; reason: string; granted_by: string; starts_at?: string; expires_at?: string | null; metadata?: Record<string, unknown> };
+        Update: { expires_at?: string | null; revoked_at?: string | null; revoked_by?: string | null; metadata?: Record<string, unknown> }; Relationships: [];
+      };
+      subscription_audit_logs: {
+        Row: { id: string; actor_id: string | null; user_id: string | null; action: string; subscription_id: string | null; metadata: Record<string, unknown>; created_at: string };
+        Insert: { actor_id?: string | null; user_id?: string | null; action: string; subscription_id?: string | null; metadata?: Record<string, unknown> };
+        Update: never; Relationships: [];
+      };
       content_versions: { Row: { id: string; entity_type: string; entity_id: string; version: number; snapshot: unknown; changed_by: string; created_at: string }; Insert: { entity_type: string; entity_id: string; version: number; snapshot: unknown; changed_by: string }; Update: never; Relationships: [] };
       admin_audit_logs: { Row: { id: string; actor_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Record<string, unknown>; created_at: string }; Insert: { actor_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Record<string, unknown> }; Update: never; Relationships: [] };
     };
@@ -206,6 +241,8 @@ export type Database = {
       admin_set_user_role: { Args: { target_user: string; requested_role: UserRole }; Returns: undefined };
       admin_question_performance: { Args: Record<string, never>; Returns: Array<{ question_id: string; attempts: number; average_percent: number; incorrect_count: number }> };
       admin_import_questions: { Args: { payload: unknown }; Returns: number };
+      consume_feature_usage: { Args: { requested_user: string; requested_feature: string; requested_period_start: string; requested_period_end: string; requested_quantity: number }; Returns: number };
+      consume_limited_feature_usage: { Args: { requested_user: string; requested_feature: string; requested_period_start: string; requested_period_end: string; requested_quantity: number; requested_limit: number | null }; Returns: number };
     };
     Enums: { app_role: UserRole; qualification_level: QualificationLevel };
     CompositeTypes: Record<string, never>;

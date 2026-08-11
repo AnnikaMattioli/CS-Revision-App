@@ -1,0 +1,5 @@
+import type {Metadata} from "next";
+import {ArrowLeft,CircleX} from "lucide-react";
+import Link from "next/link";
+export const metadata:Metadata={title:"Checkout cancelled"};
+export default function CancelledPage(){return <main id="main-content" tabIndex={-1} className="grid min-h-screen place-items-center px-5 py-16"><section className="card w-full max-w-xl p-8 text-center sm:p-12"><CircleX className="mx-auto text-[var(--coral)]" size={54}/><h1 className="mt-5 text-4xl font-black">Checkout cancelled</h1><p className="mt-3 text-lg leading-8 text-muted">You have not been upgraded and Bytewise has not unlocked a paid plan. Your free access and existing work are unchanged.</p><div className="mt-7 flex flex-wrap justify-center gap-3"><Link href="/pricing" className="flex items-center gap-2 rounded-xl bg-[var(--violet)] px-5 py-3 font-black text-white"><ArrowLeft size={18}/>Return to pricing</Link><Link href="/dashboard" className="rounded-xl border px-5 py-3 font-black">Dashboard</Link></div></section></main>}

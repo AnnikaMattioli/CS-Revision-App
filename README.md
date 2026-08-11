@@ -1,6 +1,6 @@
 # Bytewise
 
-Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. The repository contains the **complete eight-phase application**: foundation, course content, secure practice, explainable adaptation, timed Exam Mode, teacher tools, administrator tools, and release quality/deployment.
+Bytewise is an original Computer Science revision platform for UK GCSE and A-level students. It includes foundation, course content, secure practice, explainable adaptation, timed Exam Mode, teacher and administrator tools, plus a test-mode Stripe freemium subscription system.
 
 Students can learn, revise, use spaced-repetition flashcards, complete autosaved marked sets, understand mastery, follow recommendations, build streaks, unlock achievements, sit configurable timed tests and join classes. Teachers can manage classes, assignments and privacy-minimised learning evidence. Administrators can manage content, protected questions, validated imports, reports and roles through audited workflows.
 
@@ -43,6 +43,8 @@ Requirements: Node.js 20.9 or newer, npm, and optionally the Supabase CLI.
 
    Open [http://localhost:3000](http://localhost:3000).
 
+8. To test subscriptions, follow [STRIPE_SETUP.md](STRIPE_SETUP.md). Keep Stripe in test mode until its production checklist is complete.
+
 ## Checks
 
 ```bash
@@ -69,6 +71,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for the Supabase and Vercel release procedure
 - [ADAPTIVE_ALGORITHM.md](ADAPTIVE_ALGORITHM.md) — mastery and selection
 - [EXAM_MODE.md](EXAM_MODE.md) — timed assessment security
 - [SECURITY.md](SECURITY.md) — security/privacy review and release checklist
+- [STRIPE_SETUP.md](STRIPE_SETUP.md) — plans, Checkout, webhooks, Customer Portal and launch checklist
 - [ACCESSIBILITY.md](ACCESSIBILITY.md) — WCAG target, coverage and manual checks
 - [ROADMAP.md](ROADMAP.md) — completed phase history
 

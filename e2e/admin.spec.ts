@@ -8,7 +8,8 @@ test("admin dashboard opens every protected tool",async({page})=>{
 test("admin creates and publishes managed content",async({page})=>{
   await page.goto("/admin/content"); await expect(page.getByRole("heading",{level:1,name:"Build and publish the course library"})).toBeVisible(); await page.waitForLoadState("networkidle");
   await page.getByLabel("Content title").fill("AQA GCSE Revision"); await page.getByLabel("Content detail").fill("A new draft course shell."); await page.getByRole("button",{name:"Add draft"}).click();
-  await expect(page.getByText("AQA GCSE Revision",{exact:true})).toBeVisible(); await page.getByRole("button",{name:"Publish AQA GCSE Revision"}).click(); await expect(page.getByText("published",{exact:true})).toBeVisible();
+  const createdContent=page.getByRole("article").filter({hasText:"AQA GCSE Revision"}).last();
+  await expect(createdContent.getByText("AQA GCSE Revision",{exact:true})).toBeVisible(); await createdContent.getByRole("button",{name:"Publish AQA GCSE Revision"}).click(); await expect(createdContent.getByText("published",{exact:true})).toBeVisible();
 });
 
 test("question bank filters and editor saves protected marking data",async({page})=>{

@@ -1,0 +1,3 @@
+import {describe,expect,it} from "vitest";
+import Stripe from "stripe";
+describe("Stripe webhook signatures",()=>{it("accepts a valid signature and rejects a forged one",()=>{const stripe=new Stripe("sk_test_placeholder");const payload=JSON.stringify({id:"evt_test",object:"event",type:"customer.subscription.updated",data:{object:{id:"sub_test"}}});const secret="whsec_test_secret";const header=stripe.webhooks.generateTestHeaderString({payload,secret});expect(stripe.webhooks.constructEvent(payload,header,secret).id).toBe("evt_test");expect(()=>stripe.webhooks.constructEvent(payload,header,"whsec_wrong")).toThrow();});});

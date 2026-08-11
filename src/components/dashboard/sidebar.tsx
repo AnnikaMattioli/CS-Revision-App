@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, BookOpen, Brain, ChartNoAxesCombined, ClipboardCheck, FlaskConical, Home, LogOut, Menu, NotebookTabs, Settings, ShieldCheck, Users, X } from "lucide-react";
+import { Award, BookOpen, Brain, ChartNoAxesCombined, ClipboardCheck, CreditCard, FlaskConical, Home, LogOut, Menu, NotebookTabs, Settings, ShieldCheck, Sparkles, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,17 +19,22 @@ const studentNav = [
   { label: "Progress", href: "/progress", icon: ChartNoAxesCombined, available: true },
   { label: "Achievements", href: "/achievements", icon: Award, available: true },
   { label: "Classes", href: "/classes", icon: Users, available: true },
+  { label: "Student Plus", href: "/pricing", icon: Sparkles, available: true },
+  { label: "Billing", href: "/billing", icon: CreditCard, available: true },
 ];
 
 const teacherNav = [
   { label: "Teacher overview", href: "/teacher", icon: Home, available: true },
   { label: "Classes & assignments", href: "/classes", icon: Users, available: true },
+  { label: "Upgrade to Teacher Pro", href: "/pricing", icon: Sparkles, available: true },
+  { label: "Billing", href: "/billing", icon: CreditCard, available: true },
 ];
 
 const adminNav = [
   { label: "Teacher overview", href: "/teacher", icon: Home, available: true },
   { label: "Classes & assignments", href: "/classes", icon: Users, available: true },
   { label: "Administration", href: "/admin", icon: ShieldCheck, available: true },
+  { label: "Plans", href: "/pricing", icon: Sparkles, available: true },
 ];
 
 export function Sidebar({ role }: { role: "student" | "teacher" | "admin" }) {

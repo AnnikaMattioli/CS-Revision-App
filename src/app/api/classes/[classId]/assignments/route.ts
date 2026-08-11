@@ -2,11 +2,25 @@ import { NextResponse } from "next/server";
 import { requireTeacher } from "@/lib/teacher/auth";
 import { assignmentSchema } from "@/lib/teacher/validation";
 import { questionBank } from "@/lib/practice/question-bank";
+import { FeatureAccessError, requireEntitlement, requireResourceCapacity } from "@/lib/billing/server";
 
 export async function POST(request: Request, { params }: { params: Promise<{ classId: string }> }) {
   const { classId } = await params; const parsed = assignmentSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Check the assignment title, content and due date." }, { status: 400 });
   const actor = await requireTeacher(); if (!actor) return NextResponse.json({ error: "A teacher account is required." }, { status: 403 });
+  try {
+    await requireEntitlement(actor.userId, "teacher.create_assignments");
+    if (parsed.data.targetType === "practice_set" && !actor.demo) await requireEntitlement(actor.userId, "teacher.class_tests");
+    if (!actor.demo) {
+      const { data: ownedClasses } = await actor.supabase.from("classes").select("id").eq("teacher_id", actor.userId).is("archived_at", null);
+      const ids = (ownedClasses ?? []).map((item) => item.id);
+      const count = ids.length ? (await actor.supabase.from("assignments").select("id", { count: "exact", head: true }).in("class_id", ids).in("status", ["draft", "published"])).count ?? 0 : 0;
+      await requireResourceCapacity(actor.userId, "teacher.max_active_assignments", count);
+    }
+  } catch (error) {
+    if (error instanceof FeatureAccessError) return NextResponse.json({ error: error.message, code: error.code, upgradePlan: "teacher_pro" }, { status: 403 });
+    throw error;
+  }
   if (actor.demo) return NextResponse.json({ assignmentId: `demo-assignment-${Date.now()}` }, { status: 201 });
   const { data: owned } = await actor.supabase.from("classes").select("id,course_id").eq("id", classId).eq("teacher_id", actor.userId).maybeSingle();
   if (!owned) return NextResponse.json({ error: "Class not found." }, { status: 404 });

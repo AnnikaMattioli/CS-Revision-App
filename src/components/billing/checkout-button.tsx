@@ -1,0 +1,7 @@
+"use client";
+import {LoaderCircle} from "lucide-react";
+import {useRouter} from "next/navigation";
+import {useState} from "react";
+import type {PlanId} from "@/lib/billing/types";
+import {cn} from "@/lib/utils";
+export function CheckoutButton({planId,disabled=false,label="Choose plan",className}:{planId:PlanId;disabled?:boolean;label?:string;className?:string}){const router=useRouter();const[busy,setBusy]=useState(false);const[error,setError]=useState("");async function checkout(){setBusy(true);setError("");const response=await fetch("/api/billing/checkout",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({planId})});const body=await response.json();if(response.status===401){router.push(`/sign-in?next=${encodeURIComponent("/pricing")}`);return;}if(!response.ok||!body.url){setBusy(false);setError(body.error??"Checkout could not be started.");return;}window.location.assign(body.url);}return <div><button type="button" onClick={()=>void checkout()} disabled={disabled||busy} className={cn("flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--violet)] px-5 font-black text-white disabled:cursor-not-allowed disabled:opacity-55",className)}>{busy?<LoaderCircle className="animate-spin" size={18}/>:null}{disabled?"Preview only":label}</button>{error?<p role="alert" className="mt-2 text-sm font-bold text-red-600 dark:text-red-300">{error}</p>:null}</div>}

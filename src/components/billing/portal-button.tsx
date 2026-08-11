@@ -1,0 +1,4 @@
+"use client";
+import {ExternalLink,LoaderCircle} from "lucide-react";
+import {useState} from "react";
+export function PortalButton(){const[busy,setBusy]=useState(false);const[error,setError]=useState("");async function open(){setBusy(true);setError("");const response=await fetch("/api/billing/portal",{method:"POST"});const body=await response.json();if(!response.ok||!body.url){setBusy(false);setError(body.error??"Subscription management is unavailable.");return;}window.location.assign(body.url);}return <div><button onClick={()=>void open()} disabled={busy} className="flex min-h-12 items-center gap-2 rounded-xl bg-[var(--violet)] px-5 font-black text-white disabled:opacity-60">{busy?<LoaderCircle className="animate-spin" size={18}/>:<ExternalLink size={18}/>}Manage subscription</button>{error?<p role="alert" className="mt-2 text-sm font-bold text-red-600 dark:text-red-300">{error}</p>:null}</div>}
