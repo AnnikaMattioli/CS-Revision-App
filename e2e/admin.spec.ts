@@ -14,7 +14,7 @@ test("admin creates and publishes managed content",async({page})=>{
 
 test("question bank filters and editor saves protected marking data",async({page})=>{
   await page.goto("/admin/questions"); await page.getByLabel("Search questions").fill("virtual memory"); await expect(page.getByRole("heading", { name: "What is virtual memory?", exact: true })).toBeVisible();
-  await page.goto("/admin/questions/new"); await page.waitForLoadState("networkidle"); await page.getByLabel("Question text").fill("Which register stores the address of the next instruction?"); await page.getByLabel("Protected answer rule").fill('{"kind":"exact","acceptable":["program counter","pc"]}'); await page.getByLabel("Save as").selectOption("published"); await page.getByRole("button",{name:"Save question"}).click(); await expect(page).toHaveURL("/admin/questions",{timeout:15_000});
+  await page.goto("/admin/questions/new"); await page.waitForLoadState("networkidle"); await page.getByLabel("Question text").fill("Which register stores the address of the next instruction?"); await page.getByLabel("Protected answer rule").fill('{"kind":"exact","acceptable":["program counter","pc"]}'); await page.getByLabel("Save as").selectOption("published"); const saved=page.waitForResponse((response)=>response.url().endsWith("/api/admin/questions")&&response.request().method()==="POST"); await page.getByRole("button",{name:"Save question"}).click(); expect((await saved).status()).toBe(201); await expect(page).toHaveURL("/admin/questions",{timeout:15_000});
 });
 
 test("validated JSON import previews and confirms transaction",async({page})=>{

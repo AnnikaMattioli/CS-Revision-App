@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test("dashboard, learn, practice and exam pages share one course topic list", async ({ page }) => {
   await page.goto("/dashboard");
   const progressBars = page.getByRole("progressbar");
+  await expect(progressBars).toHaveCount(11);
   const dashboardCount = await progressBars.count();
   const dashboardTopics: string[] = [];
   for (let index = 0; index < dashboardCount; index += 1) {

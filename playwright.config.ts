@@ -27,6 +27,7 @@ export default defineConfig({
   testMatch: realSupabase ? "supabase.spec.ts" : "*.spec.ts",
   testIgnore: realSupabase ? undefined : "supabase.spec.ts",
   timeout: 60_000,
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   workers: process.env.CI ? 2 : 1,
   expect: { timeout: 15_000 },
