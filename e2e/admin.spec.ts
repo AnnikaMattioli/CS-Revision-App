@@ -18,7 +18,7 @@ test("question bank filters and editor saves protected marking data",async({page
 });
 
 test("validated JSON import previews and confirms transaction",async({page})=>{
-  await page.goto("/admin/imports"); const rows=[{importKey:"e2e-import-1",subtopicId:"20000000-0000-0000-0000-000000000001",type:"boolean",difficulty:"foundation",prompt:"The program counter stores the address of the next instruction.",marks:1,estimatedSeconds:30,calculatorAllowed:false,ruleType:"boolean",answerRule:{kind:"boolean",correct:true},feedback:"Correct.",explanation:"The PC tracks the next instruction.",hints:[],commonMistakes:[]}];
+  await page.goto("/admin/imports"); await page.waitForLoadState("networkidle"); const rows=[{importKey:"e2e-import-1",subtopicId:"20000000-0000-0000-0000-000000000001",type:"boolean",difficulty:"foundation",prompt:"The program counter stores the address of the next instruction.",marks:1,estimatedSeconds:30,calculatorAllowed:false,ruleType:"boolean",answerRule:{kind:"boolean",correct:true},feedback:"Correct.",explanation:"The PC tracks the next instruction.",hints:[],commonMistakes:[]}];
   await page.getByLabel("Question import file").setInputFiles({name:"questions.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(rows))}); await expect(page.getByText("1 valid")).toBeVisible(); await expect(page.getByText("0 invalid")).toBeVisible(); await page.getByRole("button",{name:"Confirm transactional import"}).click(); await expect(page.getByText("1 questions imported; 0 duplicates skipped.")).toBeVisible();
 });
 

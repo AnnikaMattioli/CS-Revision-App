@@ -27,6 +27,7 @@ async function createTestUser(email: string, displayName: string) {
 
 async function signIn(page: Page, email: string) {
   await page.goto("/sign-in");
+  await page.waitForLoadState("networkidle");
   await page.getByLabel("Email address").fill(email);
   await page.locator('input[name="password"]').fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();

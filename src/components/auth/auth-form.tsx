@@ -60,8 +60,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     if (isSignUp) Object.keys(window.localStorage).filter((key) => key.startsWith("bytewise:")).forEach((key) => window.localStorage.removeItem(key));
     const existing = window.localStorage.getItem("bytewise:demo-user");
     if (isSignUp || !existing) window.localStorage.setItem("bytewise:demo-user", JSON.stringify({ displayName, mode: "demo", profileVersion: 2 }));
-    router.push(isSignUp ? "/onboarding" : "/dashboard");
-    router.refresh();
+    window.location.assign(isSignUp ? "/onboarding" : "/dashboard");
   }
 
   const inputClass = "mt-2 h-12 w-full rounded-xl border bg-[var(--surface)] px-4 text-base font-semibold placeholder:text-[var(--muted)]/70";
