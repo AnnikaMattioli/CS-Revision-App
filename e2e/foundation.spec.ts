@@ -24,7 +24,7 @@ test("demo users can sign in without Supabase credentials", async ({ page }) => 
 
 test("a new local profile uses its own name and starts at zero", async ({ page }) => {
   await page.goto("/sign-up");
-  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("button", { name: "Create my account" })).toBeEnabled();
   await page.getByLabel("Email address").fill("jamie@example.com");
   await page.locator('input[name="password"]').fill("starting-fresh");
   const name = page.getByLabel("Your name");
